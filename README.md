@@ -173,16 +173,10 @@ export_style(style="indigo_twilight", qss_path="indigo_twilight.qss")
 
 ## Documentation
 
-Full documentation is available in the `docs` directory. To build the
-documentation locally run:
+Full documentation is published online and can be accessed at:
 
-```bash
-cd docs
-make html
-```
+[https://lewis-morris.github.io/qmaterialise](https://lewis-morris.github.io/qmaterialise)
 
-This will generate HTML pages in `_build/html`. You will need the
-optional `docs` dependencies listed in `pyproject.toml`.
 
 ## Contributing
 
