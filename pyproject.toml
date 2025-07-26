@@ -2,7 +2,7 @@
 ## https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
 [project]
 name = "q-materialise"
-version = "0.1.6"
+version = "0.1.7"
 description = "An enhanced Material Design stylesheet library for Qt (PyQt5, PyQt6, PySide2 and PySide6)"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -37,4 +37,6 @@ where = ["src"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-"q_materialise" = ["styles/*.json"]
+"q_materialise" = ["styles/*.json",
+  "icons/**/*.svg",
+]

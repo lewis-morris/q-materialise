@@ -46,8 +46,15 @@ except PackageNotFoundError:
 
 from .binding import QtCore, QtGui, QtWidgets  # re‑export common Qt classes
 from .style import Style
-from .core import inject_style, export_style, list_styles, get_style, generate_style
-
+from .core import (
+    inject_style,
+    export_style,
+    list_styles,
+    get_style,
+    generate_style,
+    invert_toolbutton_icons,
+)
+from .demo import show_demo
 __all__ = [
     "QtCore",
     "QtGui",
@@ -58,4 +65,6 @@ __all__ = [
     "list_styles",
     "get_style",
     "generate_style",
+    "invert_toolbutton_icons",
+    "show_demo"
 ]

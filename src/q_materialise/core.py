@@ -9,15 +9,19 @@ template used for skinning Qt widgets.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
 from .binding import QtGui, QtWidgets  # type: ignore
 from .style import Style
-from .utils import contrast_color, lighten
+from .utils import contrast_color, darken, lighten
 
 THEMES_DIR = Path(__file__).resolve().parent / "styles"
+_ICONS_DIR = Path(__file__).resolve().parent / "icons"
 
+def _icon_uri(rel: str) -> str:
+    return (_ICONS_DIR / rel).as_posix()
 
 def list_styles() -> List[str]:
     """Returns a list of built-in style names.
@@ -174,12 +178,20 @@ def _build_qss(style: Style, extra: Optional[Dict[str, Any]] = None) -> str:
         "PADDING_V": f"{padding_v:.0f}",
         "PADDING_H": f"{padding_h:.0f}",
         "DANGER": danger,
+        "DANGER_LIGHT": lighten(danger,.2),
+        "DANGER_DARK": darken(danger,.2),
         "ON_DANGER": on_danger,
         "WARNING": warning,
+        "WARNING_LIGHT": lighten(warning,.2),
+        "WARNING_DARK": darken(warning,.2),
         "ON_WARNING": on_warning,
         "SUCCESS": success,
+        "SUCCESS_LIGHT": lighten(success,.2),
+        "SUCCESS_DARK": darken(success,.2),
         "ON_SUCCESS": on_success,
         "INFO": info,
+        "INFO_LIGHT": lighten(info,.2),
+        "INFO_DARK": darken(info,.2),
         "ON_INFO": on_info,
         "SURFACE_ELEV_1": surface_elev_1,
         "SURFACE_ELEV_2": surface_elev_2,
@@ -187,6 +199,23 @@ def _build_qss(style: Style, extra: Optional[Dict[str, Any]] = None) -> str:
         "OUTLINE": outline,
         "OUTLINE_VARIANT": outline_variant,
     }
+
+    def _enc(hexstr: str) -> str:
+        # for data: URLs we must encode '#'
+        return hexstr.replace("#", "%23")
+
+    variables.update({
+        "ARROW_ON_SURFACE": _enc(style.on_surface),   # default arrow colour
+        "ARROW_ON_PRIMARY": _enc(style.on_primary),   # when background is primary / focused
+        "ARROW_PRIMARY":    _enc(style.primary),      # optional: if you prefer coloured arrows
+    })
+
+    variables.update({
+        "DOWN_ARROW_ACTIVE":  _icon_uri("downarrow.svg"),
+        "DOWN_ARROW_PRIMARY": _icon_uri("downarrow.svg"),
+        "UP_ARROW_ACTIVE":    _icon_uri("uparrow.svg"),
+        "UP_ARROW_PRIMARY":   _icon_uri("uparrow.svg"),
+    })
 
     # The QSS template.  Curly braces for CSS blocks are escaped with
     # double braces so that ``str.format`` treats them literally.  Only
@@ -201,7 +230,7 @@ def _build_qss(style: Style, extra: Optional[Dict[str, Any]] = None) -> str:
     # tab widgets, group boxes, item views (list/tree/table), scroll
     # bars, status bars and toolbars.  These additions ensure that
     # applications built with QMaterialise look consistent across
-    # commonly used controls in the QtWidgets module of Qt6【904435161404075†L86-L105】.
+    # commonly used controls in the QtWidgets module of Qt6.
     qss = """
 /* Base settings */
 QWidget {{
@@ -232,6 +261,40 @@ QPushButton:hover {{
 QPushButton:pressed {{
     background-color: {PRIMARY_DARK};
 }}
+
+QPushButton[class="danger"]:hover {{
+    background-color: {DANGER_LIGHT};
+    color: {ON_DANGER};
+}}
+QPushButton[class="warning"]:hover {{
+    background-color: {WARNING_LIGHT};
+    color: {ON_WARNING};
+}}
+QPushButton[class="success"]:hover {{
+    background-color: {SUCCESS_LIGHT};
+    color: {ON_SUCCESS};
+}}
+QPushButton[class="info"]:hover {{
+    background-color: {INFO_LIGHT};
+    color: {ON_INFO};
+}}
+QPushButton[class="danger"]:pressed {{
+    background-color: {DANGER_DARK};
+    color: {ON_DANGER};
+}}
+QPushButton[class="warning"]:pressed {{
+    background-color: {WARNING_DARK};
+    color: {ON_WARNING};
+}}
+QPushButton[class="success"]:pressed {{
+    background-color: {SUCCESS_DARK};
+    color: {ON_SUCCESS};
+}}
+QPushButton[class="info"]:pressed {{
+    background-color: {INFO_DARK};
+    color: {ON_INFO};
+}}
+
 
 /* Custom button classes */
 QPushButton[class="danger"] {{
@@ -325,7 +388,39 @@ QProgressBar {{
 QProgressBar::chunk {{
     background-color: {PRIMARY};
 }}
+/* QDial  - a circular progress bar */
+QDial {{
+    background-color: {SURFACE};
+    border: 2px solid {OUTLINE};
+    border-radius: 32px; /* circular */
+}}
 
+QDial::groove {{
+    background: transparent;
+}}
+
+QDial::handle {{
+    background-color: {PRIMARY};
+    border: none;
+    border-radius: 6px;
+    width: 12px;
+    height: 12px;
+    margin: -6px; /* center handle */
+}}
+
+QDial::notch {{
+    background: {OUTLINE_VARIANT};
+    width: 2px;
+    height: 6px;
+}}
+
+QLCDNumber {{
+    background-color: {SURFACE_ELEV_1};
+    color: {PRIMARY};
+    border: 1px solid {OUTLINE};
+    border-radius: 6px;
+    padding: 4px;
+}}
 /* Menu bar */
 QMenuBar {{
     background-color: {SURFACE};
@@ -340,13 +435,46 @@ QMenuBar::item:selected {{
 QMenu {{
     background-color: {SURFACE};
     color: {ON_SURFACE};
-    border: 1px solid {PRIMARY_LIGHT};
 }}
+
 QMenu::item:selected {{
     background-color: {PRIMARY_LIGHT};
     color: {ON_PRIMARY};
 }}
 
+/* Combo & date/time edits ------------------------------------------------ */
+QComboBox::down-arrow,
+QDateEdit::down-arrow,
+QTimeEdit::down-arrow,
+QDateTimeEdit::down-arrow {{
+    image: url({DOWN_ARROW_ACTIVE});
+    width: 40px; height: 40px;
+    margin-right: 6px;
+    margin-left: 6px;
+    color: {PRIMARY};
+}}
+QComboBox::down-arrow:focus,
+QDateEdit::down-arrow:focus,
+QTimeEdit::down-arrow:focus,
+QDateTimeEdit::down-arrow:focus {{
+    image: url({DOWN_ARROW_PRIMARY});
+}}
+
+/* Spin boxes ------------------------------------------------------------- */
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{
+    image: url({UP_ARROW_ACTIVE});
+    width: 20px; height: 20px;
+}}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{
+    image: url({DOWN_ARROW_ACTIVE});
+    width: 20px; height: 20px;
+}}
+QSpinBox::up-arrow:focus, QDoubleSpinBox::up-arrow:focus {{
+    image: url({UP_ARROW_PRIMARY});
+}}
+QSpinBox::down-arrow:focus, QDoubleSpinBox::down-arrow:focus {{
+    image: url({DOWN_ARROW_PRIMARY});
+}}
 /* Combo boxes */
 QComboBox {{
     background-color: {SURFACE};
@@ -367,18 +495,7 @@ QComboBox::drop-down {{
     border-top-right-radius: 6px;
     border-bottom-right-radius: 6px;
 }}
-/* Draw a simple triangle for the arrow using borders */
-QComboBox::down-arrow {{
-    width: 0;
-    height: 0;
-    margin-right: 8px;              /* keeps triangle centered in the drop area */
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-top: 8px solid {ON_SURFACE};
-}}
-QComboBox:disabled::down-arrow {{
-    border-top-color: {OUTLINE_VARIANT};
-}}
+
 
 /* Spin boxes (integer and floating point) */
 QSpinBox, QDoubleSpinBox {{
@@ -414,25 +531,11 @@ QSpinBox::down-button, QDoubleSpinBox::down-button {{
 QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {{
     background: {PRIMARY_LIGHT};
 }}
-/* Triangle arrows for spin boxes */
-QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{
-    width: 0;
-    height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-bottom: 6px solid {ON_PRIMARY};
-}}
-QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{
-    width: 0;
-    height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 6px solid {ON_PRIMARY};
-}}
+
 
 /* Tab widgets */
 QTabWidget::pane {{
-    border: 1px solid {PRIMARY_LIGHT};
+    border: 1px solid {PRIMARY_LIGHT};FCo
     border-radius: 6px;
     padding: 4px;
 }}
@@ -548,14 +651,6 @@ QToolButton:hover {{
 QToolButton:pressed {{
     background-color: {PRIMARY_DARK};
 }}
-"""
-
-    # Append an extended Material-inspired theme that covers many more
-    # widget types. The braces around CSS blocks are escaped with
-    # double braces to survive str.format substitution. Placeholders
-    # remain in single braces and will be substituted using the
-    # variables dictionary defined above.
-    qss += """
 
 /* Base / Typography ------------------------------------------------------- */
 * {{
@@ -649,8 +744,21 @@ QToolBar::separator {{
     width: 1px; height: 1px; margin: 6px;
 }}
 QToolButton {{
+    /*
+     * The tool button background needs a border otherwise Qt draws a native border
+     * that completely overlaps the background colour.  See the Qt Style Sheets
+     * reference for QToolButton【532275245469220†L418-L424】.  Without a border the
+     * light themes tend to bleed into the toolbar making the icons hard to see.
+     */
     background-color: transparent;
-    /* Removed explicit color assignment to preserve icon visibility */
+    /* Keep the explicit colour unset so that icons derived from themed SVGs or
+     * font-based icons keep their natural colours.  The global `*` rule sets
+     * the text colour to `ON_SURFACE` which is dark on light themes and
+     * light on dark themes.  If you are using QIcon::fromTheme() this
+     * allows the icons to adapt automatically.  For non-themed icons see
+     * the `invert_toolbutton_icons` helper function documented below.
+     */
+    border: 1px solid {OUTLINE_VARIANT};
     border-radius: 6px;
     padding: 6px 10px;
 }}
@@ -701,16 +809,7 @@ QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover,
 QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {{
     background: rgba( {PRIMARY_LIGHT}, 0.18 );
 }}
-QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{
-    width: 0; height: 0;
-    border-left: 4px solid transparent; border-right: 4px solid transparent;
-    border-bottom: 6px solid {ON_SURFACE};
-}}
-QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{
-    width: 0; height: 0;
-    border-left: 4px solid transparent; border-right: 4px solid transparent;
-    border-top: 6px solid {ON_SURFACE};
-}}
+
 
 /* Combo boxes ------------------------------------------------------------- */
 QComboBox {{
@@ -725,9 +824,7 @@ QComboBox::drop-down {{
     width: 32px; border-left: 1px solid {OUTLINE};
     border-top-right-radius: 6px; border-bottom-right-radius: 6px;
 }}
-QComboBox::down-arrow {{
-    /* Use the default arrow provided by the Qt style; custom arrow removed */
-}}
+
 QComboBox QAbstractItemView {{
     background-color: {SURFACE}; color: {ON_SURFACE};
     border: 1px solid {OUTLINE}; border-radius: 6px;
@@ -785,12 +882,53 @@ QProgressDialog {{ background: {SURFACE}; }}
 
 /* Menus / Menu bar -------------------------------------------------------- */
 QMenuBar {{ background-color: {SURFACE}; color: {ON_SURFACE}; }}
-QMenuBar::item {{ padding: 6px 12px; border-radius: 6px; }}
-QMenuBar::item:selected {{ background-color: {PRIMARY_LIGHT}; color: {ON_PRIMARY}; }}
+QMenuBar::item {{
+    /* Add a light outline so menu items stand out on light themes. Without
+     * a border the menu bar items blend into the background and it becomes
+     * difficult to see where one drop‑down ends and the next begins.  The
+     * outline colour is a slightly lighter version of the primary colour.
+     */
+    padding: 6px 12px;
+ 
+}}
+QMenuBar QMenu::item{{
+    margin: 0px 0px; 
+    padding: 6px 6px;
+    border: 0px solid transparent; /* Prevents menu bar items from shifting */
+    border-radius: 0px;
+}}
+QMenuBar QMenu::item:hover {{
+    background-color: {PRIMARY_DARK};
+    color: {PRIMARY};
+}}
+
+/* selected (when you’ve opened the submenu or arrow‑key navigated to it) */
+QMenuBar QMenu::item:selected {{
+    background-color: {PRIMARY_LIGHT};
+    color: {ON_PRIMARY};
+}}
+
+/* pressed (while you’re clicking it) */
+QMenuBar QMenu::item:pressed {{
+    background-color: {PRIMARY};
+    color: {ON_PRIMARY};
+}}
+
+QMenuBar::item:selected {{ background-color: {PRIMARY_LIGHT}; color: {ON_PRIMARY}; border-radius: 0px; }}
+
 QMenu {{
     background-color: {SURFACE}; color: {ON_SURFACE}; border: 1px solid {OUTLINE};
 }}
-QMenu::item {{ padding: 6px 16px; border-radius: 6px; }}
+QMenu::item {{
+    /* As with QMenuBar::item, give each menu entry a subtle border so
+     * that items do not merge together on light backgrounds.  The
+     * {OUTLINE_VARIANT} colour produces a soft separation without being
+     * intrusive. */
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: 1px solid {OUTLINE_VARIANT};
+}}
+
 QMenu::item:selected {{ background-color: {PRIMARY_LIGHT}; color: {ON_PRIMARY}; }}
 QMenu::separator {{ height: 1px; background: {OUTLINE_VARIANT}; margin: 6px 8px; }}
 
@@ -828,12 +966,8 @@ QHeaderView::section {{
 }}
 QHeaderView::section:horizontal {{ border-top-left-radius: 6px; border-top-right-radius: 6px; }}
 QHeaderView::section:vertical   {{ border-top-left-radius: 6px; border-bottom-left-radius: 6px; }}
-QHeaderView::down-arrow, QHeaderView::up-arrow {{
-    width: 0; height: 0; margin-left: 6px;
-    border-left: 4px solid transparent; border-right: 4px solid transparent;
-}}
-QHeaderView::up-arrow {{ border-bottom: 6px solid {ON_SURFACE}; }}
-QHeaderView::down-arrow {{ border-top: 6px solid {ON_SURFACE}; }}
+
+
 QTableView {{ gridline-color: {OUTLINE_VARIANT}; }}
 QTableView::item:selected, QListView::item:selected, QTreeView::item:selected {{
     background: {PRIMARY_LIGHT}; color: {ON_PRIMARY};
@@ -878,9 +1012,11 @@ QMdiArea {{ background: {SURFACE}; }}
 QMdiSubWindow {{ background: {SURFACE}; border: 1px solid {OUTLINE}; border-radius: 6px; }}
 QMdiSubWindow::title {{ background: {SURFACE_ELEV_1}; }}
 
-/* Dialogs / Message boxes ------------------------------------------------- */
-QDialog, QMessageBox {{ background: {SURFACE}; }}
+/* Dialogs / Message boxes ------------------------------------F------------- */
+QDialog, QMessageBox {{ background: {BACKGROUND}; }}
+
 QDialog QPushButton, QMessageBox QPushButton {{ min-width: 88px; }}
+
 QMessageBox QLabel {{ padding: 8px 0; }}
 QDialogButtonBox QPushButton {{ }}
 
@@ -903,9 +1039,7 @@ QDateEdit::drop-down, QTimeEdit::drop-down, QDateTimeEdit::drop-down {{
     subcontrol-origin: padding; subcontrol-position: top right;
     width: 28px; border-left: 1px solid {OUTLINE}; border-top-right-radius: 6px; border-bottom-right-radius: 6px;
 }}
-QDateEdit::down-arrow, QTimeEdit::down-arrow, QDateTimeEdit::down-arrow {{
-    width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid {ON_SURFACE};
-}}
+
 
 /* Tool tips --------------------------------------------------------------- */
 QToolTip {{
@@ -918,9 +1052,74 @@ QToolTip {{
 
 /* Tool box --------------------------------------------------------------- */
 QToolBox::tab {{
-    background: {SURFACE_ELEV_1}; color: {ON_SURFACE}; border: 1px solid {OUTLINE}; border-top-left-radius: 6px; border-top-right-radius: 6px; padding: 8px 12px;
+    /* make them tall enough for the text + padding */
+    min-height: 40px;
+    padding: 8px 16px;
+    margin: 0 4px -1px 0;          /* lift into the pane by 1px */
+
+    /* colors & borders */
+    background: {SURFACE};
+    color: {ON_SURFACE};
+    border: 1px solid {OUTLINE};
+
+    /* top corners only */
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+
+    /* no bottom rounding on tabs */
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
 }}
-QToolBox::tab:selected {{ background: {PRIMARY}; color: {ON_PRIMARY}; border-color: {PRIMARY}; }}
+
+/* Selected tab */
+QToolBox::tab:selected {{
+    background: {PRIMARY};
+    color: {ON_PRIMARY};
+
+    /* match the border to the pane below */
+    border-color: {PRIMARY};
+    border-bottom-color: {PRIMARY};
+}}
+
+/* Hover state */
+QToolBox::tab:hover {{
+    background: {SURFACE_ELEV_2};
+}}
+
+/* The content area (“pane”) */
+QToolBox::pane {{
+    /* give it its own border and only bottom corners */
+    background: {SURFACE};
+    border: 1px solid {OUTLINE};
+
+    /* no rounding on top—because tabs sit there */
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+
+    /* only bottom rounding */
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+
+    /* pull it up under the selected tab’s border */
+    margin-top: -1px;
+
+    /* inner padding so content doesn’t butt right up against the frame */
+    padding: {PADDING_V}px {PADDING_H}px;
+}}
+
+/* Finally, ensure the real QToolButtons inside get the same look */
+QToolBox QToolButton {{
+    min-height: 40px;
+    padding: 8px 16px;
+    background: transparent;   /* tabs already painted by subcontrol */
+    border: none;
+    text-align: left;
+}}
+QToolBox QToolButton:checked {{
+    /* “checked” == expanded page */
+    background: {PRIMARY};
+    color: {ON_PRIMARY};
+}}
 
 /* Wizard ------------------------------------------------------------------ */
 QWizard {{ background: {SURFACE}; }}
@@ -1063,6 +1262,15 @@ def inject_style(
     qss = _build_qss(the_style, extra=extra)
     app.setStyleSheet(qss)
 
+    # Automatically invert QToolButton icons for light themes
+    if not the_style.is_dark:
+        try:
+            # Invert all QToolButton icons under the application to improve visibility.
+            invert_toolbutton_icons(app)
+        except Exception:
+            # Never allow icon inversion to break styling; silently ignore errors.
+            pass
+
 
 def export_style(
     style: Union[str, Style, Dict[str, Any]],
@@ -1097,3 +1305,52 @@ def export_style(
     dest.parent.mkdir(parents=True, exist_ok=True)
     with dest.open("w", encoding="utf-8") as f:
         f.write(qss)
+
+
+# -----------------------------------------------------------------------------
+# Icon helpers
+#
+# Some applications rely on raster icons that do not automatically adapt
+# to light and dark themes.  On light themes these icons can appear very
+# light themselves, making them hard to discern against the background.
+# Qt's style sheets cannot recolour a binary icon directly.  To work around
+# this limitation you can invert the colours of your icons at runtime.
+# The helper below demonstrates how to do this using QImage.invertPixels().
+# The technique is based on community examples where a QImage copy is
+# inverted and used as an alternate state for a QIcon【100867099715616†L188-L200】.
+def invert_toolbutton_icons(parent: QtWidgets.QWidget) -> None:
+    """Invert the colours of all QToolButton icons under *parent*.
+
+    Use this helper on light themes when your icons are too light and lack
+    contrast.  It iterates over every QToolButton descendant of the given
+    parent, makes a copy of the button's current icon and inverts its
+    colours using :func:`QImage.invertPixels`.  The inverted pixmap is then
+    assigned back to the button via :class:`QtGui.QIcon`.
+
+    Note:
+        * Only raster icons (e.g. PNG, JPEG) are affected; SVG and font
+          icons ignore pixel inversion.
+        * Alpha channels are preserved using the `InvertRgb` mode so that
+          transparency is not lost【532275245469220†L418-L424】.
+        * This function is idempotent but will permanently invert icons;
+          call it only once per style change.
+
+    Args:
+        parent: Any QWidget; all descendant QToolButton instances are
+            processed.
+    """
+    # Iterate over all QToolButton children
+    for btn in parent.findChildren(QtWidgets.QToolButton):
+        icon = btn.icon()
+        # Skip buttons without an icon
+        if icon is None or icon.isNull():
+            continue
+        # Obtain the pixmap at the current icon size
+        size = btn.iconSize()
+        pixmap = icon.pixmap(size)
+        # Work on an image copy; invert only the RGB channels to preserve alpha
+        img = pixmap.toImage()
+        img.invertPixels(QtGui.QImage.InvertRgb)
+        # Replace the button's icon with the inverted version
+        btn.setIcon(QtGui.QIcon(QtGui.QPixmap.fromImage(img)))
+

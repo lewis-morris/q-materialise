@@ -9,8 +9,7 @@
   "background": "#212121",
   "surface": "#323232",
   "error": "#f44336",
-  "is_dark": true
-  ,
+  "is_dark": true  ,
   "extras": {
     "danger": "#dc3545",
     "warning": "#ffc107",
