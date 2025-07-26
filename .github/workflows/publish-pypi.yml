@@ -1,0 +1,40 @@
+# .github/workflows/publish-pypi.yml
+name: 📦 Publish to PyPI
+
+# trigger on version tags
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read   # for checkout
+      packages: write  # allow packaging
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install build & twine
+        run: pip install build twine
+
+      - name: Build sdist & wheel
+        run: python -m build --sdist --wheel
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__                       # literal “__token__”
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}   # your secret
+        run: python -m twine upload dist/*
+
+      - name: Cleanup built distributions
+        run: rm -rf dist

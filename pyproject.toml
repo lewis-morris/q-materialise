@@ -27,7 +27,8 @@ docs = [
   "sphinx>=6.0",               # core
   "sphinx-rtd-style>=1.2",     # or any style you like
   "sphinx-autodoc-typehints",  # if you use type hints
-  "myst-parser>=0.18"          # if you prefer Markdown + MyST
+  "myst-parser>=0.18",          # if you prefer Markdown + MyST
+  "ghp-import"
 ]
 
 [tool.setuptools.packages.find]
