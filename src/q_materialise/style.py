@@ -1,40 +1,38 @@
-"""Style representation for QMaterialise.
+"""
+Style representation for QMaterialise.
 
-The :class:`Style` class encapsulates all of the colours and settings
-required to skin a Qt application according to Material Design
-principles.  A style can be created programmatically via
-:func:`q_materialise.generate_style`, loaded from a JSON file or
-constructed directly from keyword arguments.
+The `Style` class encapsulates all colours and settings required to skin a
+Qt application according to Material Design principles. A style can be created
+programmatically via `q_materialise.generate_style`, loaded from a JSON file,
+or constructed directly from keyword arguments.
 
-In addition to the basic colours (primary, secondary, background,
-surface and error), a style stores precomputed tints and shades
-(`primary_light`, `primary_dark`, etc.) and contrast colours (e.g.
-`on_primary`).  These derived values are generated automatically when
-the style is initialised.  You can override them explicitly if you
-require full control.
+In addition to the basic colours (primary, secondary, background, surface, and
+error), a style stores precomputed tints and shades (e.g., `primary_light`,
+`primary_dark`) and contrast colours (e.g., `on_primary`). These derived values
+are generated automatically when the style is initialised but can be overridden
+explicitly for full control.
 
-Styles are serialisable to and from JSON to facilitate easy editing
-and storage.  See :meth:`Style.to_json` and :meth:`Style.from_json`.
+Styles are serialisable to and from JSON to facilitate easy editing and storage.
+See the `Style.to_json` and `Style.from_json` methods for details.
 """
 
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from typing import Any, Dict, Mapping, Optional
 
 from . import utils
+
 
 @dataclass
 class Style:
     """A Material Design style for Qt applications.
 
-    All colour attributes must be supplied as hex strings with a
-    leading ``#``.  The `is_dark` flag controls whether text and
-    surface colours default to dark or light values.  If derived
-    colours (e.g. ``primary_light``) are not provided, they will be
-    computed automatically from their base colours using sensible
-    defaults.
+    All colour attributes must be supplied as hex strings with a leading `#`.
+    The `is_dark` flag controls whether text and surface colours default to dark or light values.
+    If derived colours (e.g. `primary_light`) are not provided, they will be computed automatically
+    from their base colours using sensible defaults.
     """
 
     name: str
@@ -53,16 +51,26 @@ class Style:
     on_background: Optional[str] = None
     on_surface: Optional[str] = None
     on_error: Optional[str] = None
-    # Additional settings that can influence typography and button
-    # colours.  See :mod:`q_materialise.apply` for details.
     extras: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         # Normalise hex codes to lower case and ensure they start with '#'
-        for attr in ["primary", "secondary", "background", "surface", "error",
-                     "primary_light", "primary_dark", "secondary_light",
-                     "secondary_dark", "on_primary", "on_secondary",
-                     "on_background", "on_surface", "on_error"]:
+        for attr in [
+            "primary",
+            "secondary",
+            "background",
+            "surface",
+            "error",
+            "primary_light",
+            "primary_dark",
+            "secondary_light",
+            "secondary_dark",
+            "on_primary",
+            "on_secondary",
+            "on_background",
+            "on_surface",
+            "on_error",
+        ]:
             value = getattr(self, attr)
             if value is not None:
                 norm = self._normalise_hex(value)
@@ -75,15 +83,11 @@ class Style:
             self.surface = "#424242" if self.is_dark else "#ffffff"
 
         # Compute tints and shades if not supplied
-        #
-        # Material design defines a wide range of colour ramps for each hue.  To
-        # avoid mirroring the exact palette from other libraries, QMaterialise
-        # uses a slightly different interpolation when deriving lighter and
-        # darker variants.  A quarter of the way towards white produces a
-        # subtle tint, while darkening by twenty percent yields a rich shade.
         self.primary_light = self.primary_light or utils.lighten(self.primary, 0.25)
         self.primary_dark = self.primary_dark or utils.darken(self.primary, 0.2)
-        self.secondary_light = self.secondary_light or utils.lighten(self.secondary, 0.25)
+        self.secondary_light = self.secondary_light or utils.lighten(
+            self.secondary, 0.25
+        )
         self.secondary_dark = self.secondary_dark or utils.darken(self.secondary, 0.2)
 
         # Compute contrast colours
@@ -95,68 +99,87 @@ class Style:
 
     @staticmethod
     def _normalise_hex(value: str) -> str:
-        """Ensure a colour string starts with '#' and is lower case."""
+        """Ensures a colour string starts with '#' and is lower case.
+
+        Args:
+            value (str): The colour string.
+
+        Returns:
+            str: Normalised hex colour string.
+        """
         s = value.strip().lower()
-        if not s.startswith('#'):
-            s = '#' + s
+        if not s.startswith("#"):
+            s = "#" + s
         return s
 
     def to_dict(self) -> Dict[str, Any]:
-        """Return a dictionary representation of the style.
+        """Returns a dictionary representation of the style.
 
-        This includes derived colours and extras.  The resulting
+        This includes derived colours and extras. The resulting
         dictionary can be serialised to JSON or passed back into
-        :class:`Style` as keyword arguments.
+        `Style` as keyword arguments.
+
+        Returns:
+            Dict[str, Any]: Dictionary of style attributes.
         """
         return {
-            'name': self.name,
-            'primary': self.primary,
-            'primary_light': self.primary_light,
-            'primary_dark': self.primary_dark,
-            'secondary': self.secondary,
-            'secondary_light': self.secondary_light,
-            'secondary_dark': self.secondary_dark,
-            'background': self.background,
-            'surface': self.surface,
-            'error': self.error,
-            'on_primary': self.on_primary,
-            'on_secondary': self.on_secondary,
-            'on_background': self.on_background,
-            'on_surface': self.on_surface,
-            'on_error': self.on_error,
-            'is_dark': self.is_dark,
-            'extras': self.extras,
+            "name": self.name,
+            "primary": self.primary,
+            "primary_light": self.primary_light,
+            "primary_dark": self.primary_dark,
+            "secondary": self.secondary,
+            "secondary_light": self.secondary_light,
+            "secondary_dark": self.secondary_dark,
+            "background": self.background,
+            "surface": self.surface,
+            "error": self.error,
+            "on_primary": self.on_primary,
+            "on_secondary": self.on_secondary,
+            "on_background": self.on_background,
+            "on_surface": self.on_surface,
+            "on_error": self.on_error,
+            "is_dark": self.is_dark,
+            "extras": self.extras,
         }
 
     def to_json(self, **json_kwargs: Any) -> str:
-        """Serialise the style to a JSON string.
+        """Serialises the style to a JSON string.
 
-        Additional keyword arguments are passed through to
-        :func:`json.dumps`.
+        Additional keyword arguments are passed through to `json.dumps`.
 
-        :returns: a JSON string representation of the style
+        Args:
+            **json_kwargs: Additional keyword arguments for `json.dumps`.
+
+        Returns:
+            str: JSON string representation of the style.
         """
         return json.dumps(self.to_dict(), **json_kwargs)
 
     @classmethod
-    def from_dict(cls, data: Mapping[str, Any]) -> 'Style':
-        """Construct a :class:`Style` from a mapping.
+    def from_dict(cls, data: Mapping[str, Any]) -> "Style":
+        """Constructs a `Style` from a mapping.
 
-        Unknown keys are ignored.  Missing keys will result in
+        Unknown keys are ignored. Missing keys will result in
         sensible defaults being calculated.
 
-        :param data: a mapping of style attributes
-        :returns: a new :class:`Style` instance
+        Args:
+            data (Mapping[str, Any]): Mapping of style attributes.
+
+        Returns:
+            Style: A new `Style` instance.
         """
         kwargs = dict(data)
         return cls(**kwargs)  # type: ignore[arg-type]
 
     @classmethod
-    def from_json(cls, json_string: str) -> 'Style':
-        """Construct a :class:`Style` from a JSON string.
+    def from_json(cls, json_string: str) -> "Style":
+        """Constructs a `Style` from a JSON string.
 
-        :param json_string: JSON encoded style data
-        :returns: a new :class:`Style` instance
+        Args:
+            json_string (str): JSON encoded style data.
+
+        Returns:
+            Style: A new `Style` instance.
         """
         data = json.loads(json_string)
         return cls.from_dict(data)

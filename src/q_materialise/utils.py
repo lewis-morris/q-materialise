@@ -8,8 +8,8 @@ classes, making them easy to unit test and reuse.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Tuple
+
 
 def hex_to_rgb(hex_colour: str) -> Tuple[int, int, int]:
     """Convert a hex colour string to an RGB tuple.
@@ -28,9 +28,9 @@ def hex_to_rgb(hex_colour: str) -> Tuple[int, int, int]:
     Raises:
         ValueError: If the input is not a valid hex colour.
     """
-    s = hex_colour.strip().lstrip('#')
+    s = hex_colour.strip().lstrip("#")
     if len(s) == 3:
-        s = ''.join(ch * 2 for ch in s)
+        s = "".join(ch * 2 for ch in s)
     if len(s) != 6:
         raise ValueError(f"Invalid hex colour: {hex_colour}")
     try:
@@ -40,6 +40,7 @@ def hex_to_rgb(hex_colour: str) -> Tuple[int, int, int]:
     except ValueError as e:
         raise ValueError(f"Invalid hex colour: {hex_colour}") from e
     return (r, g, b)
+
 
 def rgb_to_hex(rgb: Tuple[int, int, int]) -> str:
     """Convert an RGB tuple into a hex colour string.
@@ -56,6 +57,7 @@ def rgb_to_hex(rgb: Tuple[int, int, int]) -> str:
     """
     r, g, b = (max(0, min(255, int(v))) for v in rgb)
     return f"#{r:02x}{g:02x}{b:02x}"
+
 
 def lighten(hex_colour: str, factor: float) -> str:
     """Return a colour that is a lighter version of the input.
@@ -77,6 +79,7 @@ def lighten(hex_colour: str, factor: float) -> str:
     b = int(b + (255 - b) * factor)
     return rgb_to_hex((r, g, b))
 
+
 def darken(hex_colour: str, factor: float) -> str:
     """Return a colour that is a darker version of the input.
 
@@ -97,6 +100,7 @@ def darken(hex_colour: str, factor: float) -> str:
     b = int(b * (1 - factor))
     return rgb_to_hex((r, g, b))
 
+
 def perceived_brightness(hex_colour: str) -> float:
     """Return the perceived brightness of a colour.
 
@@ -111,6 +115,7 @@ def perceived_brightness(hex_colour: str) -> float:
     """
     r, g, b = hex_to_rgb(hex_colour)
     return 0.299 * r + 0.587 * g + 0.114 * b
+
 
 def is_light_color(hex_colour: str) -> bool:
     """Return ``True`` if the colour is considered light.
@@ -128,6 +133,7 @@ def is_light_color(hex_colour: str) -> bool:
     """
     return perceived_brightness(hex_colour) >= 186
 
+
 def contrast_color(hex_colour: str) -> str:
     """Return black or white depending on the input colour's brightness.
 
@@ -143,4 +149,4 @@ def contrast_color(hex_colour: str) -> str:
     Returns:
         str: Either ``"#000000"`` (black) or ``"#ffffff"`` (white).
     """
-    return '#000000' if is_light_color(hex_colour) else '#ffffff'
+    return "#000000" if is_light_color(hex_colour) else "#ffffff"

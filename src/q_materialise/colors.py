@@ -1,15 +1,17 @@
-"""Base Material Design colours.
+"""
+Base Material Design colours.
 
-This module defines a small collection of base colours that can be
-combined with the palette generation functions to produce coherent
-tints and shades.  Each entry corresponds to the ``500`` shade from
-the official Material Design palette.  You can use these names when
-calling :func:`q_materialise.generate_style` or when defining your
-own style JSON files.
+This module defines a small collection of base colours that can be combined
+with the palette generation functions to produce coherent tints and shades.
+Each entry corresponds to the `500` shade from the official Material Design
+palette.
 
-The values are taken from the Material Design 2014 specification and
-are widely published on the web.  See https://material.io/design/color
-for the full reference.
+These colour names can be used when calling `q_materialise.generate_style` or
+when defining your own style JSON files.
+
+The values are taken from the Material Design 2014 specification and are
+widely published on the web. See https://material.io/design/color for the full
+reference.
 """
 
 BASE_COLORS = {
