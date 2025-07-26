@@ -10,4 +10,11 @@
   "surface": "#323232",
   "error": "#f44336",
   "is_dark": true
+  ,
+  "extras": {
+    "danger": "#dc3545",
+    "warning": "#ffc107",
+    "success": "#17a2b8",
+    "info": "#0d6efd"
+  }
 }

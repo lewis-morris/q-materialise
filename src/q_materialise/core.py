@@ -371,9 +371,13 @@ QComboBox::drop-down {{
 QComboBox::down-arrow {{
     width: 0;
     height: 0;
+    margin-right: 8px;              /* keeps triangle centered in the drop area */
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
     border-top: 8px solid {ON_SURFACE};
+}}
+QComboBox:disabled::down-arrow {{
+    border-top-color: {OUTLINE_VARIANT};
 }}
 
 /* Spin boxes (integer and floating point) */
@@ -610,7 +614,7 @@ QPushButton {{
 QPushButton:hover {{ background-color: {PRIMARY_LIGHT}; }}
 QPushButton:pressed {{ background-color: {PRIMARY_DARK}; }}
 QPushButton:default {{
-    box-shadow: none;
+    /* box-shadow property removed; unsupported in Qt stylesheets */
 }}
 QPushButton:flat {{ background-color: transparent; color: {PRIMARY}; }}
 QPushButton:flat:hover {{ background-color: rgba( {PRIMARY_LIGHT}, 0.20 ); }}
@@ -646,7 +650,7 @@ QToolBar::separator {{
 }}
 QToolButton {{
     background-color: transparent;
-    color: {ON_SURFACE};
+    /* Removed explicit color assignment to preserve icon visibility */
     border-radius: 6px;
     padding: 6px 10px;
 }}
@@ -656,7 +660,6 @@ QToolButton[popupMode="1"] {{
     padding-right: 28px;
 }}
 QToolButton::menu-indicator {{
-    image: none;
     width: 0; height: 0;
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
@@ -723,9 +726,7 @@ QComboBox::drop-down {{
     border-top-right-radius: 6px; border-bottom-right-radius: 6px;
 }}
 QComboBox::down-arrow {{
-    width: 0; height: 0;
-    border-left: 6px solid transparent; border-right: 6px solid transparent;
-    border-top: 8px solid {ON_SURFACE};
+    /* Use the default arrow provided by the Qt style; custom arrow removed */
 }}
 QComboBox QAbstractItemView {{
     background-color: {SURFACE}; color: {ON_SURFACE};
@@ -953,7 +954,7 @@ QScrollBar[class="dark"]:vertical {{ background: {SURFACE_ELEV_2}; }}
 QScrollBar[class="dark"]::handle:vertical {{ background: {PRIMARY_LIGHT}; }}
 
 /* Text browser / links ---------------------------------------------------- */
-QTextBrowser, QLabel {{ link-color: {PRIMARY}; }}
+/* Removed unsupported 'link-color' property; rely on default link styling */
 QLabel {{ color: {ON_SURFACE}; }}
 QLabel[bold="true"] {{ font-weight: 600; }}
 
@@ -1044,10 +1045,8 @@ def inject_style(
         QtGui.QPalette.ColorRole.AlternateBase, QtGui.QColor(the_style.surface)
     )
     palette.setColor(QtGui.QPalette.ColorRole.Text, QtGui.QColor(the_style.on_surface))
-    palette.setColor(QtGui.QPalette.ColorRole.Button, QtGui.QColor(the_style.primary))
-    palette.setColor(
-        QtGui.QPalette.ColorRole.ButtonText, QtGui.QColor(the_style.on_primary)
-    )
+    palette.setColor(QtGui.QPalette.ColorRole.Button,     QtGui.QColor(the_style.surface))
+    palette.setColor(QtGui.QPalette.ColorRole.ButtonText, QtGui.QColor(the_style.on_surface))
     palette.setColor(
         QtGui.QPalette.ColorRole.BrightText, QtGui.QColor(the_style.on_primary)
     )

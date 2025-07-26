@@ -168,7 +168,29 @@ class Style:
         Returns:
             Style: A new `Style` instance.
         """
-        kwargs = dict(data)
+        # Separate known fields from extras. Any unknown keys are collected into
+        # the extras dictionary rather than causing a ``TypeError`` when passed
+        # directly to the dataclass constructor. This allows style JSON files
+        # to include arbitrary extra keys (e.g. ``danger``, ``warning``, etc.)
+        # which will be available via ``style.extras``.
+        from dataclasses import fields
+
+        known = {f.name for f in fields(cls)}
+        kwargs: Dict[str, Any] = {}
+        extras: Dict[str, Any] = {}
+        for key, value in data.items():
+            if key in known:
+                kwargs[key] = value
+            else:
+                extras[key] = value
+        # If the style definition already contains an "extras" mapping, merge
+        # its contents with any additional unknown keys, giving precedence to
+        # the values explicitly defined under "extras".
+        if "extras" in kwargs and isinstance(kwargs["extras"], Mapping):
+            base_extras = dict(kwargs["extras"])
+            base_extras.update(extras)
+            extras = base_extras
+        kwargs["extras"] = extras
         return cls(**kwargs)  # type: ignore[arg-type]
 
     @classmethod
