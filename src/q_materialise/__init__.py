@@ -34,6 +34,14 @@ Example:
     ...
     ```
 """
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    # use the *distribution* name from pyproject.toml
+    __version__ = version("q-materialise")
+except PackageNotFoundError:
+    # fallback if running from source (not yet installed)
+    __version__ = "0.1.1"
 
 from .binding import QtCore, QtGui, QtWidgets  # re‑export common Qt classes
 from .style import Style
@@ -50,5 +58,3 @@ __all__ = [
     "get_style",
     "generate_style",
 ]
-
-__version__ = "0.1.0"
