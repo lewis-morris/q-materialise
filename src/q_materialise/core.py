@@ -155,7 +155,18 @@ def _build_qss(style: Style, extra: Optional[Dict[str, Any]] = None) -> str:
 
     # The QSS template.  Curly braces for CSS blocks are escaped with
     # double braces so that ``str.format`` treats them literally.  Only
-    # placeholders in uppercase are substituted.
+    # placeholders in uppercase are substituted.  If you add new
+    # rules here be careful to escape literal braces by doubling them
+    # (``{{`` and ``}}``) because we rely on ``str.format`` for
+    # interpolation.
+    #
+    # The template below defines styles for a broad range of Qt
+    # widgets.  In addition to the basics (buttons, labels and text
+    # fields) it now includes guidelines for combo boxes, spin boxes,
+    # tab widgets, group boxes, item views (list/tree/table), scroll
+    # bars, status bars and toolbars.  These additions ensure that
+    # applications built with QMaterialise look consistent across
+    # commonly used controls in the QtWidgets module of Qt6【904435161404075†L86-L105】.
     qss = """
 /* Base settings */
 QWidget {{
@@ -300,6 +311,204 @@ QMenu::item:selected {{
     background-color: {PRIMARY_LIGHT};
     color: {ON_PRIMARY};
 }}
+
+/* Combo boxes */
+QComboBox {{
+    background-color: {SURFACE};
+    color: {ON_SURFACE};
+    border: 1px solid {PRIMARY_LIGHT};
+    border-radius: 6px;
+    padding: {PADDING_V}px {PADDING_H}px;
+}}
+QComboBox:hover {{
+    border-color: {PRIMARY};
+}}
+/* Sub‑control for the arrow button on a combo box */
+QComboBox::drop-down {{
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 28px;
+    border-left: 1px solid {PRIMARY_LIGHT};
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+}}
+/* Draw a simple triangle for the arrow using borders */
+QComboBox::down-arrow {{
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid {ON_SURFACE};
+}}
+
+/* Spin boxes (integer and floating point) */
+QSpinBox, QDoubleSpinBox {{
+    background-color: {SURFACE};
+    color: {ON_SURFACE};
+    border: 1px solid {PRIMARY_LIGHT};
+    border-radius: 6px;
+    padding-right: 32px; /* leave space for the up/down buttons */
+    padding-left: {PADDING_H}px;
+    padding-top: {PADDING_V}px;
+    padding-bottom: {PADDING_V}px;
+}}
+/* Buttons for increasing/decreasing values */
+QSpinBox::up-button, QDoubleSpinBox::up-button {{
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 16px;
+    background: {PRIMARY};
+    border-left: 1px solid {PRIMARY_LIGHT};
+    border-top-right-radius: 6px;
+}}
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover {{
+    background: {PRIMARY_LIGHT};
+}}
+QSpinBox::down-button, QDoubleSpinBox::down-button {{
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 16px;
+    background: {PRIMARY};
+    border-left: 1px solid {PRIMARY_LIGHT};
+    border-bottom-right-radius: 6px;
+}}
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {{
+    background: {PRIMARY_LIGHT};
+}}
+/* Triangle arrows for spin boxes */
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 6px solid {ON_PRIMARY};
+}}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid {ON_PRIMARY};
+}}
+
+/* Tab widgets */
+QTabWidget::pane {{
+    border: 1px solid {PRIMARY_LIGHT};
+    border-radius: 6px;
+    padding: 4px;
+}}
+QTabBar::tab {{
+    background: {SURFACE};
+    color: {ON_SURFACE};
+    border: 1px solid {PRIMARY_LIGHT};
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: {PADDING_V}px {PADDING_H}px;
+    margin-right: 2px;
+}}
+QTabBar::tab:selected {{
+    background: {PRIMARY};
+    color: {ON_PRIMARY};
+    border-bottom-color: {PRIMARY};
+}}
+QTabBar::tab:hover {{
+    background: {PRIMARY_LIGHT};
+}}
+
+/* Group boxes */
+QGroupBox {{
+    border: 1px solid {PRIMARY_LIGHT};
+    border-radius: 6px;
+    margin-top: 1.0em;
+    color: {ON_SURFACE};
+}}
+QGroupBox::title {{
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0 6px;
+}}
+
+/* Abstract item views (list, tree, table) */
+QAbstractItemView {{
+    background-color: {SURFACE};
+    color: {ON_SURFACE};
+    border: 1px solid {PRIMARY_LIGHT};
+    border-radius: 6px;
+    selection-background-color: {PRIMARY_LIGHT};
+    selection-color: {ON_PRIMARY};
+    alternate-background-color: {BACKGROUND};
+}}
+/* Headers for tables and trees */
+QHeaderView::section {{
+    background-color: {PRIMARY};
+    color: {ON_PRIMARY};
+    padding: 4px;
+    border: 1px solid {PRIMARY_LIGHT};
+}}
+
+/* Scroll bars */
+QScrollBar:vertical {{
+    background: {SURFACE};
+    width: 12px;
+    margin: 0px;
+    border-radius: 6px;
+}}
+QScrollBar::handle:vertical {{
+    background: {PRIMARY};
+    min-height: 20px;
+    border-radius: 6px;
+}}
+QScrollBar::handle:vertical:hover {{
+    background: {PRIMARY_LIGHT};
+}}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+    background: none;
+    height: 0px;
+}}
+QScrollBar:horizontal {{
+    background: {SURFACE};
+    height: 12px;
+    margin: 0px;
+    border-radius: 6px;
+}}
+QScrollBar::handle:horizontal {{
+    background: {PRIMARY};
+    min-width: 20px;
+    border-radius: 6px;
+}}
+QScrollBar::handle:horizontal:hover {{
+    background: {PRIMARY_LIGHT};
+}}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
+    background: none;
+    width: 0px;
+}}
+
+/* Status bar */
+QStatusBar {{
+    background: {SURFACE};
+    color: {ON_SURFACE};
+    border-top: 1px solid {PRIMARY_LIGHT};
+}}
+
+/* Tool bars */
+QToolBar {{
+    background: {SURFACE};
+    border-bottom: 1px solid {PRIMARY_LIGHT};
+}}
+QToolButton {{
+    background-color: {PRIMARY};
+    color: {ON_PRIMARY};
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+}}
+QToolButton:hover {{
+    background-color: {PRIMARY_LIGHT};
+}}
+QToolButton:pressed {{
+    background-color: {PRIMARY_DARK};
+}}
 """
 
     return qss.format(**variables)
@@ -312,25 +521,56 @@ def inject_style(
 ) -> None:
     """Applies a style to a running QApplication.
 
-    This function sets the application palette and stylesheet based on
-    the provided style. It may be called at any time, even after the
-    application has created its widgets. Passing a style name causes
-    the corresponding built-in style to be loaded; passing a mapping
-    results in a `Style` being constructed; passing a `Style` instance
-    uses it directly.
+    This high‑level helper sets both the Qt palette and the
+    application‑wide style sheet.  It may be called at any time, even
+    after widgets have been created, and the changes take effect
+    immediately.  You can pass a built‑in style name, an existing
+    :class:`~q_materialise.style.Style` instance or a plain mapping of
+    attributes; the latter two options allow you to construct and
+    customise styles programmatically.
 
-    The optional `extra` dictionary can be used to override button
-    colours (`danger`, `warning`, `success`, `info`), specify font
-    settings (`font_family`, `font_size`) and adjust the density scale
-    (`density_scale`). Unknown keys are ignored.
+    The optional ``extra`` dictionary provides fine‑grained
+    customisation without having to subclass or manually edit the
+    generated QSS.  Recognised keys include:
+
+    ``danger``, ``warning``, ``success``, ``info``
+        Define the colours for special button classes.  When a
+        :class:`~PySide6.QtWidgets.QPushButton` has its ``class``
+        property set to one of these names the corresponding colour
+        will be used for its background and the text colour will be
+        chosen automatically for contrast.
+
+    ``font_family``, ``font_size``
+        Specify the global font family and size used throughout the
+        style.  Any valid CSS font family and size expressions are
+        accepted.  By default QMaterialise uses ``"Roboto, sans-serif"``
+        at ``14px``.  Changing the font can dramatically alter the
+        personality of your application; for example, you might set
+        ``font_family" : "Fira Code, monospace"`` to give a code editor
+        a distinct look.
+
+    ``density_scale``
+        Adjusts how much internal padding widgets have.  A positive
+        value reduces padding to create denser UIs, whilst a negative
+        value increases padding and makes controls easier to click on
+        touch devices.  The default is ``0``.  Padding is calculated
+        relative to the baseline values defined in the QSS template and
+        cannot result in negative sizes.
+
+    Any other keys in ``extra`` are ignored, which makes it safe to
+    merge arbitrary dictionaries of settings.  See
+    :func:`~q_materialise.export_style` if you want to write the
+    resulting stylesheet to a file for use outside of Python.
 
     Args:
-        app (QtWidgets.QApplication): The QApplication to style.
-        style (Union[str, Style, Dict[str, Any]]): A style name, dict or Style instance.
-        extra (Optional[Dict[str, Any]], optional): Optional overrides for colours and fonts.
+        app: The :class:`~PySide6.QtWidgets.QApplication` instance to style.
+        style: A built‑in style name, :class:`~q_materialise.style.Style` or
+            mapping.  See :func:`~q_materialise.get_style` and
+            :func:`~q_materialise.generate_style` for ways to obtain styles.
+        extra: Optional overrides for colours, fonts and density.
 
     Raises:
-        TypeError: If style is not a string, Style instance or mapping.
+        TypeError: If ``style`` is not a recognised type.
     """
     # Convert style argument to Style instance
     if isinstance(style, str):

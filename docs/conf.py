@@ -28,10 +28,32 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.autodoc.typehints",
+    # Automatically generate stub pages for documented members.
+    # This extension works together with :members: directives to
+    # create summary pages for classes, functions and modules. Without
+    # it the `api` page can remain empty if imports fail.
+    "sphinx.ext.autosummary",
 ]
 
 # Render type hints in the description rather than signature
 autodoc_typehints = "description"
+
+# When building the API documentation we do not necessarily have the
+# various Qt bindings installed in the environment used by Sphinx.
+# Attempting to import PySide6, PyQt6, PySide2 or PyQt5 would raise
+# ImportError and cause the ``automodule`` directives in api.rst to
+# silently fail, producing an empty page.  To avoid this we tell
+# autodoc to mock these modules when they cannot be imported.  Mocking
+# simply creates lightweight objects in place of the real packages so
+# that the public API of ``q_materialise`` can still be introspected.
+autodoc_mock_imports = ["PySide6", "PyQt6", "PySide2", "PyQt5"]
+
+# Enable generation of autosummary stubs.  When ``make html`` runs
+# autosummary will scan the package and create short summary tables
+# for all documented objects.  Combined with the ``:members:`` option
+# in ``api.rst`` this ensures that classes and functions are listed
+# explicitly in the reference documentation.
+autosummary_generate = True
 
 # Paths that contain templates
 templates_path = ["_templates"]

@@ -37,21 +37,11 @@ binding you intend to use you should also install the corresponding
 optional dependency:
 
 ```bash
-# Install the core library and PySide6 (for example)
-pip install "qmaterialise[pyside6]"
+# Install the core library
+pip install "q-materialise"
 
-# Or install a different binding
-pip install "qmaterialise[pyqt6]"
 ```
 
-If you prefer to install from source simply clone this repository and
-invoke `pip`:
-
-```bash
-git clone https://github.com/your-user/qmaterialise.git
-cd qmaterialise
-pip install -e .[pyside6]  # replace with the binding of your choice
-```
 
 ## Quick start
 

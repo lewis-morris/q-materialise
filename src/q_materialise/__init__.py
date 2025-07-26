@@ -34,6 +34,7 @@ Example:
     ...
     ```
 """
+
 from importlib.metadata import version, PackageNotFoundError
 
 try:

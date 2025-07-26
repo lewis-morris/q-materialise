@@ -12,6 +12,23 @@ underlying binding.  In most cases you will not need to interact
 directly with this module because widgets imported from your binding
 will work transparently with the stylesheet.
 
+If you wish to remain agnostic about which binding is in use you may
+import the widget classes from :mod:`q_materialise.binding`.  This
+module re‑exports the ``QtCore``, ``QtGui`` and ``QtWidgets``
+namespaces from whichever Qt wrapper the library has detected.  The
+following pattern lets you write portable code without having to
+decide up front between PySide6, PyQt6, PySide2 or PyQt5:
+
+.. code-block:: python
+
+    from q_materialise.binding import QtWidgets
+    from q_materialise import inject_style
+
+    app = QtWidgets.QApplication([])
+    inject_style(app, style="sapphire_day")
+    # ... build your UI ...
+    app.exec()
+
 Applying a style
 ----------------
 
@@ -24,14 +41,29 @@ instance.  You can pass either the name of a built‑in style or a
 
     import sys
     from q_materialise import inject_style
-    from PySide6 import QtWidgets
+
+    # Import a specific Qt binding or remain binding‑agnostic by
+    # importing from q_materialise.binding.  Here we explicitly
+    # choose PySide6 for demonstration.  Replace with PyQt6, PySide2
+    # or PyQt5 as needed.
+    try:
+        from PySide6 import QtWidgets
+    except ImportError:
+        # Fallback: import whatever binding q_materialise selected.
+        from q_materialise.binding import QtWidgets
 
     app = QtWidgets.QApplication(sys.argv)
-    # choose one of the built‑in styles, for example a light blue palette
+    # Choose one of the built‑in styles (see list_styles() for names).
     inject_style(app, style="sapphire_day")
     main_window = QtWidgets.QMainWindow()
+    main_window.setWindowTitle("Sapphire Day Example")
+    main_window.resize(640, 480)
     main_window.show()
-    sys.exit(app.exec())
+
+    # Start the event loop.  On Qt5 the method is exec_() instead of
+    # exec().  q_materialise provides a helper to abstract this away.
+    from q_materialise.binding import exec_  # optional convenience
+    sys.exit(exec_(app))
 
 Listing styles
 --------------
@@ -62,34 +94,205 @@ Generating styles
 -----------------
 
 You can programmatically generate a new style from a small set of
-inputs using :func:`~q_materialise.generate_style`.
+inputs using :func:`~q_materialise.generate_style`.  At a minimum you
+must supply a unique ``name`` along with two base colours: the
+``primary`` and ``secondary`` swatches expressed as hex strings.  A
+Boolean ``is_dark`` flag controls whether the palette is dark or
+light.  All other derived colours (``primary_light``, ``primary_dark``,
+etc.) will be calculated automatically to ensure sufficient contrast
+between elements.  You may override any of these derived values by
+passing additional keyword arguments.  Arbitrary keys not recognised
+by the :class:`~q_materialise.style.Style` data class will be stored
+in the ``extras`` mapping.
+
+Here is a complete example that creates a custom dark theme, applies
+it to a ``QApplication`` and inspects the resulting colours:
 
 .. code-block:: python
 
-    from q_materialise import generate_style
+    from q_materialise import generate_style, inject_style
+    from q_materialise.binding import QtWidgets
 
+    # Create a dark theme centred around deep orange and teal.
     my_style = generate_style(
         name="my_dark_style",
-        primary="#ff5722",
-        secondary="#009688",
+        primary="#ff5722",   # deep orange
+        secondary="#009688", # teal
         is_dark=True,
     )
 
+    # Apply it like any other style.
+    app = QtWidgets.QApplication([])
+    inject_style(app, style=my_style)
+
+    # Build and show a simple window to see the colours in action.
+    w = QtWidgets.QWidget()
+    w.setWindowTitle("Custom Dark Style")
+    w.resize(360, 240)
+    w.show()
+
+    # Inspect the generated colours.  Derived values such as
+    # ``primary_light`` and ``on_primary`` are computed automatically.
     print(my_style.to_dict())
+
+    from q_materialise.binding import exec_
+    exec_(app)
 
 Runtime extras
 --------------
 
-Additional colours and font settings can be supplied via the `extra`
-argument of :func:`~q_materialise.inject_style`.  See the
-documentation of that function for a list of recognised keys.  Unknown
-keys will be silently ignored.
+QMaterialise lets you override parts of a style at run time by
+passing an ``extra`` dictionary to :func:`~q_materialise.inject_style`.
+This mechanism is useful when you want to tweak a built‑in theme
+without copying and editing the underlying JSON.  Any key in the
+dictionary that is recognised by the style system will be applied;
+unknown keys are ignored.  The recognised keys are:
+
+``danger``, ``warning``, ``success``, ``info``
+    Colour overrides for special button classes.  By setting the
+    ``class`` property on a :class:`~PySide6.QtWidgets.QPushButton` you can
+    access these palettes (for example ``button.setProperty("class",
+    "danger")``).  Use these keys in ``extra`` to assign bespoke
+    hexadecimal colours for destructive, cautionary or informational
+    actions.  When unspecified the defaults are based on the
+    Bootstrap colour scheme.
+
+``font_family``, ``font_size``
+    Global typography settings.  You can specify any valid CSS
+    `font-family` and `font-size` values.  For instance, you might
+    switch to a monospace typeface by passing ``{"font_family": "Fira
+    Code", "font_size": "13px"}``.  Qt style sheets apply these
+    settings to every widget in the application, mirroring the
+    examples in Qt's own style sheet documentation.
+
+``density_scale``
+    A float controlling the internal padding of widgets.  Positive
+    values compress padding and make interfaces denser; negative
+    values add extra breathing room, which can help on touch screens.
+    Padding is computed from a base value—so a scale of ``1`` reduces
+    vertical padding by one pixel and horizontal padding by two pixels.
+
+When combining these overrides you can build your own house style
+programmatically.  Here's an example that customises several aspects
+at once:
+
+.. code-block:: python
+
+    from q_materialise import inject_style
+    from PySide6 import QtWidgets
+
+    app = QtWidgets.QApplication([])
+    extras = {
+        "danger": "#c1121f",  # dark red for critical actions
+        "success": "#198754", # green for affirmative actions
+        "font_family": "Inter, sans-serif",
+        "font_size": "15px",
+        "density_scale": -1,  # slightly larger padding
+    }
+    inject_style(app, style="emerald_morning", extra=extras)
+    # ... create and show your widgets as usual ...
+
+As with any Qt style sheet, selectors and dynamic properties are
+respected【24292334749734†L63-L81】.  This means you can assign custom
+``objectName`` values or dynamic properties (via
+``widget.setProperty(key, value)``) and write additional rules in
+your own QSS to target them.  You can also extend the generated
+stylesheet with pseudo‑states (like ``:hover`` and ``:checked``) to
+refine the look and feel of your widgets.  The official Qt
+documentation contains many examples of advanced style sheet usage.
+
+Working with Style objects
+--------------------------
+
+When you generate or load a theme you obtain an instance of
+:class:`~q_materialise.style.Style`.  This data class collects all
+colours and flags associated with the palette.  Some useful methods
+and attributes:
+
+``Style.to_dict()``
+    Returns a dictionary mapping attribute names to values.  Use this
+    for debugging, serialisation or to pass to other APIs.
+
+``Style.to_json(**json_kwargs)``
+    Serialises the style to JSON.  Additional keyword arguments are
+    forwarded to :func:`json.dumps`, allowing you to control
+    indentation, key ordering, etc.
+
+``Style.from_dict(mapping)`` / ``Style.from_json(string)``
+    Alternate constructors that build a ``Style`` from a mapping or
+    JSON string.  Unknown keys are ignored and defaults are filled in
+    automatically.
+
+``Style.extras``
+    A mapping of arbitrary metadata passed to the constructor.  While
+    unused by the core library, this field is available for your own
+    extensions or to record provenance information.
+
+Colour helper functions
+-----------------------
+
+In addition to the high‑level styling API Q‑Materialise exposes a
+collection of pure functions in :mod:`q_materialise.utils` for
+manipulating colours.  These helpers can be useful when you need to
+convert between colour representations or compute tints and shades
+outside of the styling system:
+
+``hex_to_rgb(hex_colour)``
+    Convert a hex colour string (``"#rrggbb"`` or shorthand
+    ``"#rgb"``) into an ``(r, g, b)`` tuple of integers in the range
+    0–255.  An invalid string will raise :class:`ValueError`.
+
+``rgb_to_hex((r, g, b))``
+    Convert an RGB tuple back into a lower‑case hex string with a
+    leading ``#``.  Values outside the 0–255 range are clamped.
+
+``lighten(colour, factor)`` / ``darken(colour, factor)``
+    Compute colours that are lighter or darker versions of the input.
+    A ``factor`` of 0 returns the original colour; 1 returns pure
+    white or black.  These functions are used to derive ``primary_light``
+    and ``primary_dark`` from your base colours.
+
+``contrast_color(colour)``
+    Return either black (``"#000000"``) or white (``"#ffffff"``)
+    depending on whether the input is considered light or dark.  This
+    helper implements the same contrast calculation used by the
+    Material Design guidelines to determine text colours.
 
 Exporting stylesheets
 ---------------------
 
-To write the current style to a `.qss` file use
-:func:`~q_materialise.export_style`.  This function accepts a
-:class:`~q_materialise.style.Style` instance or a style name, a
-destination path and the same optional extras accepted by
-:func:`~q_materialise.inject_style`.
+To write a style to a ``.qss`` file call
+:func:`~q_materialise.export_style`.  The first argument may be a
+built‑in style name, a :class:`~q_materialise.style.Style` instance
+or even a plain dictionary of style attributes.  The second argument
+is the destination file; parent directories will be created if
+necessary.  The optional ``extra`` parameter has the same meaning as
+in :func:`~q_materialise.inject_style` and allows you to customise
+fonts, button classes and density at export time.  Once written, the
+stylesheet is a self‑contained text file that can be consumed by
+Qt Designer, loaded from C++ or QML or applied in another Python
+project.
+
+.. code-block:: python
+
+    from q_materialise import export_style, generate_style
+
+    # Generate a bespoke light theme.
+    paper = generate_style(
+        name="my_paper",
+        primary="#795548",   # brown
+        secondary="#ffeb3b", # yellow
+    )
+    # Write the resulting QSS file into the resources directory.
+    export_style(paper, qss_path="resources/styles/my_paper.qss")
+
+Further customisation
+---------------------
+
+The generated QSS is intended to be a starting point.  You can open
+the file and append additional rules or selectors to customise
+individual widgets, respond to hover/pressed states or integrate with
+third‑party controls.  For inspiration and guidance refer to the
+official Qt style sheet examples.
+
+.. _Qt Style Sheets examples: https://doc.qt.io/qt-6/stylesheet-examples.html
