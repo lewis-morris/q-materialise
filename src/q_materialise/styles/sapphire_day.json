@@ -1,0 +1,13 @@
+{
+  "name": "sapphire_day",
+  "primary": "#2196f3",
+  "primary_light": "#58b0f6",
+  "primary_dark": "#1a78c2",
+  "secondary": "#f5f5f5",
+  "secondary_light": "#ffffff",
+  "secondary_dark": "#eeeeee",
+  "background": "#f8f8f8",
+  "surface": "#ffffff",
+  "error": "#f44336",
+  "is_dark": false
+}

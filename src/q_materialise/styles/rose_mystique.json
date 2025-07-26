@@ -1,0 +1,13 @@
+{
+  "name": "rose_mystique",
+  "primary": "#e91e63",
+  "primary_light": "#ee568a",
+  "primary_dark": "#ba184f",
+  "secondary": "#795548",
+  "secondary_light": "#9a7f75",
+  "secondary_dark": "#604439",
+  "background": "#212121",
+  "surface": "#323232",
+  "error": "#f44336",
+  "is_dark": true
+}

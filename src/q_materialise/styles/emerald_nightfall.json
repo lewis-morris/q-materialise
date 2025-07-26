@@ -1,0 +1,13 @@
+{
+  "name": "emerald_nightfall",
+  "primary": "#009688",
+  "primary_light": "#3fb0a5",
+  "primary_dark": "#00786c",
+  "secondary": "#4caf50",
+  "secondary_light": "#78c37b",
+  "secondary_dark": "#3c8c40",
+  "background": "#212121",
+  "surface": "#323232",
+  "error": "#f44336",
+  "is_dark": true
+}

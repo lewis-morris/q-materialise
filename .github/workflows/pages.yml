@@ -1,0 +1,26 @@
+name: Publish Docs
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # needed for gh-pages branches
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install docs deps
+        run: pip install .[docs]
+      - name: Build Sphinx
+        run: sphinx-build -b html docs/ docs/_build/html
+      - name: Deploy to gh-pages
+        run: |
+          pip install ghp-import
+          ghp-import -n docs/_build/html
+          git push origin gh-pages

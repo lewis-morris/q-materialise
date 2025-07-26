@@ -1,0 +1,13 @@
+{
+  "name": "crimson_depth",
+  "primary": "#f44336",
+  "primary_light": "#f67268",
+  "primary_dark": "#c3352b",
+  "secondary": "#607d8b",
+  "secondary_light": "#879da8",
+  "secondary_dark": "#4c646f",
+  "background": "#212121",
+  "surface": "#323232",
+  "error": "#f44336",
+  "is_dark": true
+}

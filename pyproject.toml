@@ -1,0 +1,34 @@
+## This project uses PEP 621 declarative metadata.  See
+## https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
+[project]
+name = "q-materialise"
+version = "0.1.0"
+description = "An enhanced Material Design stylesheet library for Qt (PyQt5, PyQt6, PySide2 and PySide6)"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+  { name = "Lewis (arched.dev)", email = "lewis@arched.dev" }
+]
+keywords = ["qt", "material", "stylesheet", "style", "gui", "pyqt", "pyside"]
+license = { file = "LICENSE" }
+# The core library does not require any particular Qt binding.  It dynamically
+# selects whichever binding is available at runtime.  Optional extras can be
+# installed to ensure a specific binding is present.
+dependencies = [
+  "packaging>=20.0"
+]
+
+[project.optional-dependencies]
+pyqt5 = ["PyQt5>=5.15"]
+pyqt6 = ["PyQt6>=6.0"]
+pyside2 = ["PySide2>=5.15"]
+pyside6 = ["PySide6>=6.0"]
+docs = [
+  "sphinx>=6.0",               # core
+  "sphinx-rtd-style>=1.2",     # or any style you like
+  "sphinx-autodoc-typehints",  # if you use type hints
+  "myst-parser>=0.18"          # if you prefer Markdown + MyST
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

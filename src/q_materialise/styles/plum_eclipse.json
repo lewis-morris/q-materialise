@@ -1,0 +1,13 @@
+{
+  "name": "plum_eclipse",
+  "primary": "#673ab7",
+  "primary_light": "#8d6bc9",
+  "primary_dark": "#522e92",
+  "secondary": "#3f51b5",
+  "secondary_light": "#6f7cc7",
+  "secondary_dark": "#324090",
+  "background": "#212121",
+  "surface": "#323232",
+  "error": "#f44336",
+  "is_dark": true
+}

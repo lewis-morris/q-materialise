@@ -1,0 +1,13 @@
+{
+  "name": "dark_teal",
+  "primary": "#009688",
+  "primary_light": "#52c7b8",
+  "primary_dark": "#00695c",
+  "secondary": "#607d8b",
+  "secondary_light": "#8eacbb",
+  "secondary_dark": "#34515e",
+  "background": "#303030",
+  "surface": "#424242",
+  "error": "#f44336",
+  "is_dark": true
+}

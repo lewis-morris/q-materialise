@@ -1,0 +1,13 @@
+{
+  "name": "tangerine_dusk",
+  "primary": "#ff9800",
+  "primary_light": "#ffb13f",
+  "primary_dark": "#cc7900",
+  "secondary": "#795548",
+  "secondary_light": "#9a7f75",
+  "secondary_dark": "#604439",
+  "background": "#212121",
+  "surface": "#323232",
+  "error": "#f44336",
+  "is_dark": true
+}

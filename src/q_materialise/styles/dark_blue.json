@@ -1,0 +1,13 @@
+{
+  "name": "dark_blue",
+  "primary": "#2196f3",
+  "primary_light": "#64b5f6",
+  "primary_dark": "#1976d2",
+  "secondary": "#37474f",
+  "secondary_light": "#62727b",
+  "secondary_dark": "#102027",
+  "background": "#303030",
+  "surface": "#424242",
+  "error": "#f44336",
+  "is_dark": true
+}

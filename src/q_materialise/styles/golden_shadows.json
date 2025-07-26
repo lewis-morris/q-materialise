@@ -1,0 +1,13 @@
+{
+  "name": "golden_shadows",
+  "primary": "#ffc107",
+  "primary_light": "#ffd045",
+  "primary_dark": "#cc9a05",
+  "secondary": "#ff5722",
+  "secondary_light": "#ff8159",
+  "secondary_dark": "#cc451b",
+  "background": "#212121",
+  "surface": "#323232",
+  "error": "#f44336",
+  "is_dark": true
+}

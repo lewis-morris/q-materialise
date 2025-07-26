@@ -1,0 +1,13 @@
+{
+  "name": "forest_dusk",
+  "primary": "#4caf50",
+  "primary_light": "#78c37b",
+  "primary_dark": "#3c8c40",
+  "secondary": "#ff9800",
+  "secondary_light": "#ffb13f",
+  "secondary_dark": "#cc7900",
+  "background": "#212121",
+  "surface": "#323232",
+  "error": "#f44336",
+  "is_dark": true
+}

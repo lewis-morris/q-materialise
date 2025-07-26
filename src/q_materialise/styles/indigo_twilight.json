@@ -1,0 +1,13 @@
+{
+  "name": "indigo_twilight",
+  "primary": "#3f51b5",
+  "primary_light": "#6f7cc7",
+  "primary_dark": "#324090",
+  "secondary": "#00bcd4",
+  "secondary_light": "#3fccde",
+  "secondary_dark": "#0096a9",
+  "background": "#212121",
+  "surface": "#323232",
+  "error": "#f44336",
+  "is_dark": true
+}
