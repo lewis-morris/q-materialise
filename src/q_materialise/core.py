@@ -19,6 +19,7 @@ from .icon_utils import (
     _prepare_arrow_icons,
     _set_all_icons,
 )
+import textwrap
 from .style import Style
 from .utils import contrast_color, darken, lighten
 
@@ -226,7 +227,8 @@ def _build_qss(style: Style, extra: Optional[Dict[str, Any]] = None) -> str:
     # bars, status bars and toolbars.  These additions ensure that
     # applications built with QMaterialise look consistent across
     # commonly used controls in the QtWidgets module of Qt6.
-    qss = """
+    qss_template = textwrap.dedent(
+        """
 /* Base settings */
 QWidget {{background-color: {BACKGROUND};
     color: {ON_BACKGROUND};
@@ -799,7 +801,6 @@ QMdiSubWindow::title {{background: {SURFACE_ELEV_1};}}
 QDialog, QMessageBox {{background: {BACKGROUND};}}
 QDialog QPushButton, QMessageBox QPushButton {{min-width: 88px;}}
 QMessageBox QLabel {{padding: 8px 0;}}
-QDialogButtonBox QPushButton {{}}
 
 /* Calendar widget --------------------------------------------------------- */
 QCalendarWidget {{background: {SURFACE}; border: 1px solid {OUTLINE}; border-radius: 6px;}}
@@ -915,9 +916,9 @@ QLabel {{color: {ON_SURFACE};}}
 QLabel[bold="true"] {{font-weight: 600;}}
 
 """
+    )
 
-
-    return qss.format(**variables)
+    return qss_template.format(**variables)
 
 
 def inject_style(
