@@ -86,6 +86,15 @@ def generate_style(
         name=name, primary=primary, secondary=secondary, is_dark=is_dark, **kwargs
     )
 
+def _set_all_icons(app: QtWidgets.QApplication) -> app:
+    class IconProxyStyle(QtWidgets.QProxyStyle):
+        def standardIcon(self, sp, option=None, widget=None):
+            if sp == QtWidgets.QStyle.SP_MessageBoxInformation:
+                return QtGui.QIcon(str(_ICONS_DIR / "info.svg"))
+            return super().standardIcon(sp, option, widget)
+
+    app.setStyle(IconProxyStyle(app.style()))
+    return app
 
 def _build_qss(style: Style, extra: Optional[Dict[str, Any]] = None) -> str:
     """Internal helper to construct the QSS string for a style.
@@ -1261,6 +1270,7 @@ def inject_style(
     # Build QSS and apply it
     qss = _build_qss(the_style, extra=extra)
     app.setStyleSheet(qss)
+    _set_all_icons(app)
 
     # Automatically invert QToolButton icons for light themes
     if not the_style.is_dark:
