@@ -89,6 +89,31 @@ class InputsPageA(QtWidgets.QWidget):
         add_section(vbox, "QTextEdit", te)
         add_section(vbox, "QPlainTextEdit", pte)
 
+        # ——— New “ToolButton Examples” section ———
+        tools_widget = QtWidgets.QWidget()
+        tools_layout = QtWidgets.QHBoxLayout(tools_widget)
+        tools_layout.setSpacing(8)
+
+        # Define a few (icon, tooltip) pairs
+        buttons = [
+            (QtWidgets.QStyle.SP_MessageBoxInformation,  "Info placeholder"),
+            (QtWidgets.QStyle.SP_DialogSaveButton,       "Save placeholder"),
+            (QtWidgets.QStyle.SP_DialogOpenButton,       "Open placeholder"),
+            (QtWidgets.QStyle.SP_TrashIcon,              "Delete placeholder"),
+            (QtWidgets.QStyle.SP_ArrowBack,              "Back placeholder"),
+        ]
+
+        for icon_enum, tooltip_text in buttons:
+            btn = QtWidgets.QToolButton()
+            # use the widget’s style to get a standard icon
+            btn.setIcon(self.style().standardIcon(icon_enum))
+            btn.setAutoRaise(True)
+            # simple HTML tooltip with a bold title
+            btn.setToolTip(f"<b>{tooltip_text}</b><br>Secondary text…")
+            tools_layout.addWidget(btn)
+
+        add_section(vbox, "ToolButton (hover me)", tools_widget)
+
         vbox.addStretch(1)
 
 

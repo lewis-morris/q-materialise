@@ -52,7 +52,6 @@ from .core import (
     list_styles,
     get_style,
     generate_style,
-    invert_toolbutton_icons,
 )
 from .demo import show_demo
 __all__ = [
@@ -65,6 +64,5 @@ __all__ = [
     "list_styles",
     "get_style",
     "generate_style",
-    "invert_toolbutton_icons",
     "show_demo"
 ]
