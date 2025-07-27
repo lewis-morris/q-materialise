@@ -96,13 +96,17 @@ def _colorize_icon(icon: QtGui.QIcon, color: QtGui.QColor,
         out.addPixmap(_tint_pixmap(pm, color))
     return out
 
-def _set_all_icons(app: QtWidgets.QApplication,
-                   primary_color: str,
-                   default_px: int = 24) -> QApplication:
+def _set_all_icons(
+    app: QtWidgets.QApplication,
+    text_color: str,
+    is_dark: bool,
+    default_px: int = 24,
+) -> QApplication:
     class IconProxyStyle(QtWidgets.QProxyStyle):
-        def __init__(self, base, color: QtGui.QColor, default_px: int):
+        def __init__(self, base, color: QtGui.QColor, is_dark: bool, default_px: int):
             super().__init__(base)
             self._color = color
+            self._is_dark = is_dark
             self._default_px = default_px
 
         # Set default icon sizes; explicit setIconSize() still overrides.
@@ -116,17 +120,74 @@ def _set_all_icons(app: QtWidgets.QApplication,
             return super().pixelMetric(metric, option, widget)
 
         def standardIcon(self, sp, option=None, widget=None) -> QtGui.QIcon:
-            # Your custom mapping, now tinted and sized
-            if sp == QtWidgets.QStyle.SP_MessageBoxInformation:
-                pm = _render_svg_tinted(_ICONS_DIR / "info_outline.svg",
-                                        QtCore.QSize(self._default_px, self._default_px),
-                                        self._color)
+            # Map common standard pixmaps to our bundled icons
+            mapping = {
+                QtWidgets.QStyle.SP_TitleBarMenuButton: "menu.svg",
+                QtWidgets.QStyle.SP_TitleBarMinButton: "minimize.svg",
+                QtWidgets.QStyle.SP_TitleBarMaxButton: "maximize.svg",
+                QtWidgets.QStyle.SP_TitleBarCloseButton: "close.svg",
+                QtWidgets.QStyle.SP_TitleBarContextHelpButton: "help_outline.svg",
+                QtWidgets.QStyle.SP_DockWidgetCloseButton: "close.svg",
+                QtWidgets.QStyle.SP_MessageBoxInformation: "info_outline.svg",
+                QtWidgets.QStyle.SP_MessageBoxWarning: "warning.svg",
+                QtWidgets.QStyle.SP_MessageBoxCritical: "error.svg",
+                QtWidgets.QStyle.SP_MessageBoxQuestion: "help_outline.svg",
+                QtWidgets.QStyle.SP_DesktopIcon: "desktop_mac.svg",
+                QtWidgets.QStyle.SP_TrashIcon: "delete.svg",
+                QtWidgets.QStyle.SP_ComputerIcon: "computer.svg",
+                QtWidgets.QStyle.SP_DirOpenIcon: "folder_open.svg",
+                QtWidgets.QStyle.SP_DirClosedIcon: "folder.svg",
+                QtWidgets.QStyle.SP_FileIcon: "insert_drive_file.svg",
+                QtWidgets.QStyle.SP_FileDialogNewFolder: "create_new_folder.svg",
+                QtWidgets.QStyle.SP_DialogOkButton: "check.svg",
+                QtWidgets.QStyle.SP_DialogCancelButton: "cancel.svg",
+                QtWidgets.QStyle.SP_DialogHelpButton: "help_outline.svg",
+                QtWidgets.QStyle.SP_DialogOpenButton: "folder_open.svg",
+                QtWidgets.QStyle.SP_DialogSaveButton: "save.svg",
+                QtWidgets.QStyle.SP_DialogCloseButton: "close.svg",
+                QtWidgets.QStyle.SP_DialogApplyButton: "done.svg",
+                QtWidgets.QStyle.SP_DialogResetButton: "refresh.svg",
+                QtWidgets.QStyle.SP_DialogDiscardButton: "delete.svg",
+                QtWidgets.QStyle.SP_DialogYesButton: "check.svg",
+                QtWidgets.QStyle.SP_DialogNoButton: "close.svg",
+                QtWidgets.QStyle.SP_ArrowUp: "arrow_upward.svg",
+                QtWidgets.QStyle.SP_ArrowDown: "arrow_downward.svg",
+                QtWidgets.QStyle.SP_ArrowLeft: "arrow_left.svg",
+                QtWidgets.QStyle.SP_ArrowRight: "arrow_right.svg",
+                QtWidgets.QStyle.SP_ArrowBack: "arrow_back.svg",
+                QtWidgets.QStyle.SP_ArrowForward: "arrow_forward.svg",
+                QtWidgets.QStyle.SP_DirHomeIcon: "home.svg",
+                QtWidgets.QStyle.SP_CommandLink: "link.svg",
+                QtWidgets.QStyle.SP_VistaShield: "shield.svg",
+                QtWidgets.QStyle.SP_BrowserReload: "refresh.svg",
+                QtWidgets.QStyle.SP_BrowserStop: "stop.svg",
+                QtWidgets.QStyle.SP_MediaPlay: "play_arrow.svg",
+                QtWidgets.QStyle.SP_MediaStop: "stop.svg",
+                QtWidgets.QStyle.SP_MediaPause: "pause.svg",
+                QtWidgets.QStyle.SP_MediaSkipForward: "skip_next.svg",
+                QtWidgets.QStyle.SP_MediaSkipBackward: "skip_previous.svg",
+                QtWidgets.QStyle.SP_MediaSeekForward: "fast_forward.svg",
+                QtWidgets.QStyle.SP_MediaSeekBackward: "fast_rewind.svg",
+                QtWidgets.QStyle.SP_MediaVolume: "volume_up.svg",
+                QtWidgets.QStyle.SP_MediaVolumeMuted: "volume_off.svg",
+                QtWidgets.QStyle.SP_LineEditClearButton: "close.svg",
+                QtWidgets.QStyle.SP_RestoreDefaultsButton: "restore.svg",
+                QtWidgets.QStyle.SP_TabCloseButton: "close.svg",
+            }
+
+            icon_name = mapping.get(sp)
+            if icon_name:
+                pm = _render_svg_tinted(
+                    _ICONS_DIR / icon_name,
+                    QtCore.QSize(self._default_px, self._default_px),
+                    self._color,
+                )
                 return QtGui.QIcon(pm)
 
             base = super().standardIcon(sp, option, widget)
             return _colorize_icon(base, self._color)
 
-    style = IconProxyStyle(app.style(), QtGui.QColor(primary_color), default_px)
+    style = IconProxyStyle(app.style(), QtGui.QColor(text_color), is_dark, default_px)
     app.setStyle(style)
     return app
 
