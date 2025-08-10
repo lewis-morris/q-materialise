@@ -15,7 +15,6 @@ from typing import Any, Dict, List, Optional, Union
 from .binding import QtGui, QtWidgets  # type: ignore
 from .icon_utils import (
     _apply_global_icon_tint,
-    _icon_uri,
     _prepare_arrow_icons,
     _set_all_icons,
 )
@@ -147,17 +146,14 @@ def _build_qss(style: Style, extra: Optional[Dict[str, Any]] = None) -> str:
     )
     # Surface elevations: default all levels to the base surface. Users
     # may override these individually in ``extra`` or ``style.extras``.
-    surface_elev_1 = (
-        extra.get("surface_elev_1")
-        or style.extras.get("surface_elev_1", style.surface)
+    surface_elev_1 = extra.get("surface_elev_1") or style.extras.get(
+        "surface_elev_1", style.surface
     )
-    surface_elev_2 = (
-        extra.get("surface_elev_2")
-        or style.extras.get("surface_elev_2", style.surface)
+    surface_elev_2 = extra.get("surface_elev_2") or style.extras.get(
+        "surface_elev_2", style.surface
     )
-    surface_elev_3 = (
-        extra.get("surface_elev_3")
-        or style.extras.get("surface_elev_3", style.surface)
+    surface_elev_3 = extra.get("surface_elev_3") or style.extras.get(
+        "surface_elev_3", style.surface
     )
 
     variables = {
@@ -181,20 +177,20 @@ def _build_qss(style: Style, extra: Optional[Dict[str, Any]] = None) -> str:
         "PADDING_V": f"{padding_v:.0f}",
         "PADDING_H": f"{padding_h:.0f}",
         "DANGER": danger,
-        "DANGER_LIGHT": lighten(danger,.2),
-        "DANGER_DARK": darken(danger,.2),
+        "DANGER_LIGHT": lighten(danger, 0.2),
+        "DANGER_DARK": darken(danger, 0.2),
         "ON_DANGER": on_danger,
         "WARNING": warning,
-        "WARNING_LIGHT": lighten(warning,.2),
-        "WARNING_DARK": darken(warning,.2),
+        "WARNING_LIGHT": lighten(warning, 0.2),
+        "WARNING_DARK": darken(warning, 0.2),
         "ON_WARNING": on_warning,
         "SUCCESS": success,
-        "SUCCESS_LIGHT": lighten(success,.2),
-        "SUCCESS_DARK": darken(success,.2),
+        "SUCCESS_LIGHT": lighten(success, 0.2),
+        "SUCCESS_DARK": darken(success, 0.2),
         "ON_SUCCESS": on_success,
         "INFO": info,
-        "INFO_LIGHT": lighten(info,.2),
-        "INFO_DARK": darken(info,.2),
+        "INFO_LIGHT": lighten(info, 0.2),
+        "INFO_DARK": darken(info, 0.2),
         "ON_INFO": on_info,
         "SURFACE_ELEV_1": surface_elev_1,
         "SURFACE_ELEV_2": surface_elev_2,
@@ -203,13 +199,17 @@ def _build_qss(style: Style, extra: Optional[Dict[str, Any]] = None) -> str:
         "OUTLINE_VARIANT": outline_variant,
     }
 
-    scheme = _prepare_arrow_icons(style.on_background if style.is_dark else style.on_surface)
+    active_scheme = _prepare_arrow_icons(
+        style.on_background if style.is_dark else style.on_surface,
+        "arrow_active",
+    )
+    primary_scheme = _prepare_arrow_icons(style.primary, "arrow_primary")
     variables.update(
         {
-            "DOWN_ARROW_ACTIVE": f"{scheme}down.svg",
-            "DOWN_ARROW_PRIMARY": f"{scheme}down.svg",
-            "UP_ARROW_ACTIVE": f"{scheme}up.svg",
-            "UP_ARROW_PRIMARY": f"{scheme}up.svg",
+            "DOWN_ARROW_ACTIVE": f"{active_scheme}down.svg",
+            "DOWN_ARROW_PRIMARY": f"{primary_scheme}down.svg",
+            "UP_ARROW_ACTIVE": f"{active_scheme}up.svg",
+            "UP_ARROW_PRIMARY": f"{primary_scheme}up.svg",
         }
     )
 
@@ -346,7 +346,7 @@ QDial::notch {{background: {OUTLINE_VARIANT};
     height: 6px;}}
 
 QLCDNumber {{background-color: {SURFACE_ELEV_1};
-    color: {PRIMARY};
+    color: {ON_SURFACE};
     border: 1px solid {OUTLINE};
     border-radius: 6px;
     padding: {PADDING_V}px {PADDING_H}px;}}
@@ -359,7 +359,9 @@ QMenuBar::item:selected {{background-color: {PRIMARY_LIGHT};
 
 /* Menus */
 QMenu {{background-color: {SURFACE};
-    color: {ON_SURFACE};}}
+    color: {ON_SURFACE};
+    border: 1px solid {OUTLINE};
+    border-radius: 6px;}}
 
 QMenu::item:selected {{background-color: {PRIMARY_LIGHT};
     color: {ON_PRIMARY};}}
@@ -371,9 +373,8 @@ QTimeEdit::down-arrow,
 QDateTimeEdit::down-arrow {{image: url({DOWN_ARROW_ACTIVE});
     width: 40px; height: 40px;
     margin-right: 6px;
-    margin-left: 6px;
-    color: {PRIMARY};}}
-    
+    margin-left: 6px;}}
+
 QComboBox::down-arrow:focus,
 QDateEdit::down-arrow:focus,
 QTimeEdit::down-arrow:focus,
@@ -387,8 +388,6 @@ QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{image: url({DOWN_ARROW_ACTIVE
 QSpinBox::up-arrow:focus, QDoubleSpinBox::up-arrow:focus {{image: url({UP_ARROW_PRIMARY});}}
 QSpinBox::down-arrow:focus, QDoubleSpinBox::down-arrow:focus {{image: url({DOWN_ARROW_PRIMARY});}}
 /* Combo boxes */
-
-    
 
 /* Sub‑control for the arrow button on a combo box */
 QComboBox::drop-down {{subcontrol-origin: padding;
@@ -461,6 +460,18 @@ QTabBar::tab:selected {{background: {PRIMARY};
     border-bottom-color: {PRIMARY};}}
 QTabBar::tab:hover {{background: {PRIMARY_LIGHT};}}
 
+/* Tool boxes ------------------------------------------------------------- */
+QToolBox {{border: 1px solid {PRIMARY_LIGHT};
+    border-radius: 6px;}}
+QToolBox::tab {{background: {SURFACE_ELEV_1};
+    color: {ON_SURFACE};
+    border: 1px solid {PRIMARY_LIGHT};
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: {PADDING_V}px {PADDING_H}px;}}
+QToolBox::tab:selected {{background: {PRIMARY};
+    color: {ON_PRIMARY};}}
+
 /* Group boxes */
 QGroupBox {{border: 1px solid {PRIMARY_LIGHT};
     border-radius: 6px;
@@ -483,6 +494,10 @@ QHeaderView::section {{background-color: {PRIMARY};
     color: {ON_PRIMARY};
     padding: 4px;
     border: 1px solid {PRIMARY_LIGHT};}}
+
+/* Scroll areas ------------------------------------------------------------- */
+QScrollArea {{background: {SURFACE};
+    border: none;}}
 
 /* Scroll bars */
 QScrollBar:vertical {{background: {SURFACE};
@@ -662,7 +677,7 @@ QComboBox::drop-down {{
 }}
 
 
-QComboBox QAbstractItemView, QComboBox QListView, QComboBox QComboBoxPrivateContainer {{ 
+QComboBox QAbstractItemView, QComboBox QListView, QComboBox QComboBoxPrivateContainer {{
   background-color: {SURFACE};
   color: {ON_SURFACE};
   border: 2px solid {PRIMARY};
@@ -807,7 +822,10 @@ QCalendarWidget {{background: {SURFACE}; border: 1px solid {OUTLINE}; border-rad
 QCalendarWidget QWidget {{alternate-background-color: {SURFACE_ELEV_1};}}
 QCalendarWidget QToolButton {{background: transparent; color: {ON_SURFACE}; border-radius: 6px; padding: 4px 8px;}}
 QCalendarWidget QToolButton:hover {{background: rgba( {PRIMARY_LIGHT}, 0.18 );}}
-QCalendarWidget QMenu {{border-radius: 6px;}}
+QCalendarWidget QMenu {{background-color: {SURFACE};
+    color: {ON_SURFACE};
+    border: 1px solid {OUTLINE};
+    border-radius: 6px;}}
 QCalendarWidget QSpinBox {{border: none;}}
 QCalendarWidget QAbstractItemView:enabled {{selection-background-color: {PRIMARY_LIGHT}; selection-color: {ON_PRIMARY};}}
 QCalendarWidget QTableView {{selection-background-color: {PRIMARY_LIGHT};}}
@@ -1003,8 +1021,10 @@ def inject_style(
         QtGui.QPalette.ColorRole.AlternateBase, QtGui.QColor(the_style.surface)
     )
     palette.setColor(QtGui.QPalette.ColorRole.Text, QtGui.QColor(the_style.on_surface))
-    palette.setColor(QtGui.QPalette.ColorRole.Button,     QtGui.QColor(the_style.surface))
-    palette.setColor(QtGui.QPalette.ColorRole.ButtonText, QtGui.QColor(the_style.on_surface))
+    palette.setColor(QtGui.QPalette.ColorRole.Button, QtGui.QColor(the_style.surface))
+    palette.setColor(
+        QtGui.QPalette.ColorRole.ButtonText, QtGui.QColor(the_style.on_surface)
+    )
     palette.setColor(
         QtGui.QPalette.ColorRole.BrightText, QtGui.QColor(the_style.on_primary)
     )
@@ -1020,7 +1040,7 @@ def inject_style(
     # Build QSS and apply it
     qss = _build_qss(the_style, extra=extra)
     QtGui.QPixmapCache.clear()
-    
+
     # Icons: colour standard icons with the theme's text colour
     text_col = the_style.on_background if the_style.is_dark else the_style.on_surface
     _set_all_icons(app, text_color=text_col, is_dark=the_style.is_dark, default_px=24)
@@ -1062,5 +1082,3 @@ def export_style(
     dest.parent.mkdir(parents=True, exist_ok=True)
     with dest.open("w", encoding="utf-8") as f:
         f.write(qss)
-
-
