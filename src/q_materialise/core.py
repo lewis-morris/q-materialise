@@ -1019,7 +1019,8 @@ def inject_style(
 
     # Build QSS and apply it
     qss = _build_qss(the_style, extra=extra)
-
+    QtGui.QPixmapCache.clear()
+    
     # Icons: colour standard icons with the theme's text colour
     text_col = the_style.on_background if the_style.is_dark else the_style.on_surface
     _set_all_icons(app, text_color=text_col, is_dark=the_style.is_dark, default_px=24)

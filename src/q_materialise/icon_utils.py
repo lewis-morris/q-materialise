@@ -258,6 +258,7 @@ def _write_tinted_svg(src: Path, dest: Path, fill_hex: str) -> None:
     # replace any existing fill=... with your fill; adapt as needed
     text = re.sub(r'fill="[^"]*"', f'fill="{fill_hex}"', text)
     dest.write_text(text, encoding="utf-8")
+    QtGui.QPixmapCache.remove(str(dest))
 
 def _prepare_arrow_icons(primary_hex: str) -> str:
     base = Path(QtCore.QStandardPaths.writableLocation(
