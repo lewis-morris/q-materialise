@@ -940,6 +940,33 @@ QLabel[bold="true"] {{font-weight: 600;}}
     return qss_template.format(**variables)
 
 
+def _style_lcd_numbers(app: QtWidgets.QApplication, style: Style) -> None:
+    """Ensure ``QLCDNumber`` widgets use flat segments and theme colours.
+
+    Qt does not fully honour stylesheets for LCD widgets, particularly for
+    segment rendering. This helper updates any existing ``QLCDNumber`` in the
+    application so that their digits are drawn using the theme's surface and
+    text colours.
+
+    Args:
+        app: The running :class:`~PySide6.QtWidgets.QApplication`.
+        style: The :class:`~q_materialise.style.Style` supplying colours.
+    """
+
+    for widget in app.allWidgets():
+        if isinstance(widget, QtWidgets.QLCDNumber):
+            widget.setSegmentStyle(QtWidgets.QLCDNumber.SegmentStyle.Flat)
+            palette = widget.palette()
+            palette.setColor(
+                QtGui.QPalette.ColorRole.Window, QtGui.QColor(style.surface)
+            )
+            palette.setColor(
+                QtGui.QPalette.ColorRole.WindowText,
+                QtGui.QColor(style.on_surface),
+            )
+            widget.setPalette(palette)
+
+
 def inject_style(
     app: QtWidgets.QApplication,
     style: Union[str, Style, Dict[str, Any]],
@@ -1048,6 +1075,7 @@ def inject_style(
     _apply_global_icon_tint(app, primary_color=the_style.primary, default_px=24)
 
     app.setStyleSheet(qss)
+    _style_lcd_numbers(app, the_style)
 
 
 def export_style(
