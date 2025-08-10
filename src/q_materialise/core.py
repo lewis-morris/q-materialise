@@ -278,13 +278,13 @@ QPushButton[class="info"] {{background-color: {INFO};
     color: {ON_INFO};}}
 
 /* Line edits and text fields */
-QLineEdit, QTextEdit, QPlainTextEdit {{background-color: {SURFACE};
+QLineEdit, QTextEdit, QPlainTextEdit, QKeySequenceEdit {{background-color: {SURFACE};
     color: {ON_SURFACE};
     border: 1px solid {PRIMARY_LIGHT};
     /* Match button corner radius for visual consistency */
     border-radius: 6px;
     padding: {PADDING_V}px {PADDING_H}px;}}
-QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {{border: 1px solid {PRIMARY};}}
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QKeySequenceEdit:focus {{border: 1px solid {PRIMARY};}}
 
 /* Labels */
 QLabel {{color: {ON_SURFACE};}}
@@ -349,6 +349,7 @@ QLCDNumber {{background-color: {SURFACE_ELEV_1};
     color: {ON_SURFACE};
     border: 1px solid {OUTLINE};
     border-radius: 6px;
+    qproperty-segmentStyle: QLCDNumber::Flat;
     padding: {PADDING_V}px {PADDING_H}px;}}
 
 /* Menu bar */
@@ -631,13 +632,13 @@ QToolButton::menu-indicator {{width: 0; height: 0;
     margin: 0 8px 0 8px;}}
 
 /* Line edits & text fields ------------------------------------------------ */
-QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit {{background-color: {SURFACE};
+QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox, QDoubleSpinBox, QDateEdit, QTimeEdit, QDateTimeEdit, QKeySequenceEdit {{background-color: {SURFACE};
     color: {ON_SURFACE};
     border: 1px solid {OUTLINE};
     border-radius: 6px;
     padding: {PADDING_V}px {PADDING_H}px;}}
 QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus,
-QDateEdit:focus, QTimeEdit:focus, QDateTimeEdit:focus {{border: 2px solid {PRIMARY};
+QDateEdit:focus, QTimeEdit:focus, QDateTimeEdit:focus, QKeySequenceEdit:focus {{border: 2px solid {PRIMARY};
     outline: none;}}
 /* Placeholder text (Qt 5.12+ / 6) */
 QLineEdit::placeholder, QTextEdit[placeholderText], QPlainTextEdit[placeholderText] {{color: rgba( {ON_SURFACE}, 0.60 );}}

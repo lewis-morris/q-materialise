@@ -60,6 +60,19 @@ class TestStyleSheet(unittest.TestCase):
         qss = self._patched_qss()
         self.assertRegex(qss, r"QMenu \{[^}]*border: 1px solid")
 
+    def test_lcd_uses_flat_segments(self) -> None:
+        """Ensure QLCDNumber uses flat segments for correct coloring."""
+        qss = self._patched_qss()
+        self.assertRegex(
+            qss,
+            r"QLCDNumber \{[^}]*qproperty-segmentStyle: QLCDNumber::Flat;",
+        )
+
+    def test_keysequenceedit_included(self) -> None:
+        """Verify QKeySequenceEdit receives line edit styling."""
+        qss = self._patched_qss()
+        self.assertIn("QKeySequenceEdit", qss)
+
 
 if __name__ == "__main__":  # pragma: no cover - manual execution
     unittest.main()

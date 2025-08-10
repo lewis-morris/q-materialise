@@ -24,13 +24,12 @@ Notes
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass
 from typing import Iterable, Optional
 
 from PySide6.QtTest import QTest
 
 # QMaterialise — auto-selects available Qt binding
-from .core import inject_style, list_styles, get_style  # type: ignore
+from .core import inject_style, list_styles  # type: ignore
 
 # We'll primarily target PySide6 APIs. If a different binding is present,
 # q_materialise.binding can be used, but importing from PySide6 directly works
@@ -189,15 +188,20 @@ class InputsPageC(QtWidgets.QWidget):
         add_section(vbox, "QDateTimeEdit", dte)
 
         # Combo, LCD & KeySequence
-        combo = QtWidgets.QComboBox(); combo.addItems(["Foo","Bar","Baz"])
-        lcd   = QtWidgets.QLCDNumber(); lcd.display(1234)
-        kse   = QtWidgets.QKeySequenceEdit(); kse.setKeySequence(QtGui.QKeySequence("Ctrl+Shift+K"))
+        combo = QtWidgets.QComboBox()
+        combo.addItems(["Foo", "Bar", "Baz"])
+        lcd = QtWidgets.QLCDNumber()
+        lcd.display(1234)
+        lcd.setSegmentStyle(
+            QtWidgets.QLCDNumber.Flat
+        )  # Use flat segments so QSS colors apply
+        kse = QtWidgets.QKeySequenceEdit()
+        kse.setKeySequence(QtGui.QKeySequence("Ctrl+Shift+K"))
         add_section(vbox, "QComboBox", combo)
         add_section(vbox, "QLCDNumber", lcd)
         add_section(vbox, "QKeySequenceEdit", kse)
 
         vbox.addStretch(1)
-
 
 
 class ViewsPageA(QtWidgets.QWidget):
@@ -507,7 +511,6 @@ class ContainersPage(QtWidgets.QWidget):
         add_section(vbox, "Scroll Bars", scrollbars)
 
         vbox.addStretch(1)
-
 
 
 class MenusToolbarsPage(QtWidgets.QWidget):
