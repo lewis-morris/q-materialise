@@ -1,17 +1,16 @@
 # Opt-out / bookkeeping flags
+from __future__ import annotations
 import re
 from pathlib import Path
+from xml.etree import ElementTree as ET
 
 from PySide6 import QtCore, QtGui, QtSvg, QtWidgets
-from PySide6.QtCore import QDir, QStandardPaths
 from PySide6.QtWidgets import QApplication
 
 _NO_TINT_PROP = "_no_icon_tint"
 _TINTED_PROP = "_icon_tinted"
 
 _ICONS_DIR = Path(__file__).resolve().parent / "icons"
-
-from xml.etree import ElementTree as ET
 
 _SVG_NS = "http://www.w3.org/2000/svg"
 ET.register_namespace("", _SVG_NS)
@@ -25,6 +24,7 @@ _SVG_FILLABLE_TAGS = {
     f"{{{_SVG_NS}}}polygon",
     f"{{{_SVG_NS}}}polyline",
 }
+
 
 def write_svg_with_missing_fill_added(src: Path, dest: Path, fill_hex: str) -> None:
     """
@@ -46,6 +46,7 @@ def write_svg_with_missing_fill_added(src: Path, dest: Path, fill_hex: str) -> N
         encoding="utf-8",
     )
 
+
 def _icon_uri(rel: str) -> str:
     return (_ICONS_DIR / rel).as_posix()
 
@@ -63,7 +64,10 @@ def _tint_pixmap(pix: QtGui.QPixmap, color: QtGui.QColor) -> QtGui.QPixmap:
     p.end()
     return out
 
-def _render_svg_tinted(path: Path, size: QtCore.QSize, color: QtGui.QColor) -> QtGui.QPixmap:
+
+def _render_svg_tinted(
+    path: Path, size: QtCore.QSize, color: QtGui.QColor
+) -> QtGui.QPixmap:
     w = size.width() if size.width() > 0 else 24
     h = size.height() if size.height() > 0 else 24
     pm = QtGui.QPixmap(w, h)
@@ -77,13 +81,19 @@ def _render_svg_tinted(path: Path, size: QtCore.QSize, color: QtGui.QColor) -> Q
     # Fallback: load raster and tint
     base = QtGui.QPixmap(str(path))
     if not base.isNull():
-        base = base.scaled(w, h, QtCore.Qt.AspectRatioMode.KeepAspectRatio,
-                           QtCore.Qt.TransformationMode.SmoothTransformation)
+        base = base.scaled(
+            w,
+            h,
+            QtCore.Qt.AspectRatioMode.KeepAspectRatio,
+            QtCore.Qt.TransformationMode.SmoothTransformation,
+        )
         return _tint_pixmap(base, color)
     return pm
 
-def _colorize_icon(icon: QtGui.QIcon, color: QtGui.QColor,
-                   sizes=(16, 20, 24, 32, 48)) -> QtGui.QIcon:
+
+def _colorize_icon(
+    icon: QtGui.QIcon, color: QtGui.QColor, sizes=(16, 20, 24, 32, 48)
+) -> QtGui.QIcon:
     if icon.isNull():
         pm = QtGui.QPixmap(24, 24)
         pm.fill(QtCore.Qt.GlobalColor.transparent)
@@ -95,6 +105,7 @@ def _colorize_icon(icon: QtGui.QIcon, color: QtGui.QColor,
             continue
         out.addPixmap(_tint_pixmap(pm, color))
     return out
+
 
 def _set_all_icons(
     app: QtWidgets.QApplication,
@@ -191,6 +202,7 @@ def _set_all_icons(
     app.setStyle(style)
     return app
 
+
 def _tint_widget_icons(color: QtGui.QColor, default_px: int = 24) -> None:
     def tint_action(act: QtGui.QAction):
         if act.property(_NO_TINT_PROP) is True or act.property(_TINTED_PROP) is True:
@@ -222,6 +234,7 @@ def _tint_widget_icons(color: QtGui.QColor, default_px: int = 24) -> None:
                 if not ic.isNull():
                     w.setTabIcon(i, _colorize_icon(ic, color))
 
+
 class _IconTintFilter(QtCore.QObject):
     def __init__(self, color: QtGui.QColor, default_px: int = 24, parent=None):
         super().__init__(parent)
@@ -236,21 +249,26 @@ class _IconTintFilter(QtCore.QObject):
         if t == QtCore.QEvent.Type.ActionAdded:
             if isinstance(obj, QtWidgets.QWidget):
                 for act in obj.actions():
-                    if act.property(_NO_TINT_PROP) is not True and act.property(_TINTED_PROP) is not True:
+                    if (
+                        act.property(_NO_TINT_PROP) is not True
+                        and act.property(_TINTED_PROP) is not True
+                    ):
                         ic = act.icon()
                         if not ic.isNull():
                             act.setIcon(_colorize_icon(ic, self._color))
                             act.setProperty(_TINTED_PROP, True)
         return super().eventFilter(obj, ev)
 
-def _apply_global_icon_tint(app: QtWidgets.QApplication,
-                            primary_color: str,
-                            default_px: int = 24) -> None:
+
+def _apply_global_icon_tint(
+    app: QtWidgets.QApplication, primary_color: str, default_px: int = 24
+) -> None:
     color = QtGui.QColor(primary_color)
     _tint_widget_icons(color, default_px)
     filt = _IconTintFilter(color, default_px, parent=app)
     app.installEventFilter(filt)
     app._icon_tint_filter = filt  # prevent GC
+
 
 def _write_tinted_svg(src: Path, dest: Path, fill_hex: str) -> None:
     # naive replace; ensure your SVG uses fill attributes
@@ -260,17 +278,36 @@ def _write_tinted_svg(src: Path, dest: Path, fill_hex: str) -> None:
     dest.write_text(text, encoding="utf-8")
     QtGui.QPixmapCache.remove(str(dest))
 
-def _prepare_arrow_icons(primary_hex: str) -> str:
-    base = Path(QtCore.QStandardPaths.writableLocation(
-        QtCore.QStandardPaths.StandardLocation.AppDataLocation
-    ))
-    outdir = base / "qmaterialise" / "icons" / primary_hex.lstrip("#")
+
+def _prepare_arrow_icons(color_hex: str, alias: str) -> str:
+    """Create tinted arrow icons and register a Qt search path.
+
+    The generated SVG icons are stored in a cache directory and a search
+    path ``alias`` is registered so that the returned scheme can be used
+    directly within stylesheets, e.g. ``f"{scheme}down.svg"``.
+
+    Args:
+        color_hex: Colour used to tint the icons.
+        alias: Name of the Qt search path alias.
+
+    Returns:
+        str: The scheme prefix referencing the generated icons.
+    """
+
+    base = Path(
+        QtCore.QStandardPaths.writableLocation(
+            QtCore.QStandardPaths.StandardLocation.AppDataLocation
+        )
+    )
+    outdir = base / "qmaterialise" / "icons" / color_hex.lstrip("#")
     outdir.mkdir(parents=True, exist_ok=True)
 
-    write_svg_with_missing_fill_added(_ICONS_DIR / "arrow_drop_down.svg",
-                                      outdir / "down.svg", primary_hex)
-    write_svg_with_missing_fill_added(_ICONS_DIR / "arrow_drop_up.svg",
-                                      outdir / "up.svg", primary_hex)
+    write_svg_with_missing_fill_added(
+        _ICONS_DIR / "arrow_drop_down.svg", outdir / "down.svg", color_hex
+    )
+    write_svg_with_missing_fill_added(
+        _ICONS_DIR / "arrow_drop_up.svg", outdir / "up.svg", color_hex
+    )
 
-    QtCore.QDir.setSearchPaths("icons", [str(outdir)])
-    return "icons:"
+    QtCore.QDir.setSearchPaths(alias, [str(outdir)])
+    return f"{alias}:"
